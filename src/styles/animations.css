@@ -1,0 +1,329 @@
+/* —— Daurin motion system —— */
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes modalBackdropIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes heroFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes progressFill {
+  from {
+    width: 0;
+  }
+}
+
+@keyframes navUnderline {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes countPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  70% {
+    transform: scale(1.04);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Page shell */
+.animate-page {
+  animation: none;
+}
+
+.animate-nav {
+  animation: none;
+}
+
+/* Scroll reveal */
+.reveal {
+  opacity: 1;
+  transform: translateY(0);
+  transition: none;
+  transition-delay: 0ms;
+  will-change: auto;
+}
+
+.reveal.reveal--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-scale {
+  opacity: 1;
+  transform: scale(1);
+  transition: none;
+  transition-delay: 0ms;
+}
+
+.reveal-scale.reveal--visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Stagger grids */
+.stagger-grid > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.stagger-grid.stagger-grid--visible > * {
+  animation: none;
+}
+
+.stagger-grid.stagger-grid--visible > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-grid.stagger-grid--visible > *:nth-child(2) { animation-delay: 70ms; }
+.stagger-grid.stagger-grid--visible > *:nth-child(3) { animation-delay: 140ms; }
+.stagger-grid.stagger-grid--visible > *:nth-child(4) { animation-delay: 210ms; }
+.stagger-grid.stagger-grid--visible > *:nth-child(5) { animation-delay: 280ms; }
+.stagger-grid.stagger-grid--visible > *:nth-child(6) { animation-delay: 350ms; }
+.stagger-grid.stagger-grid--visible > *:nth-child(7) { animation-delay: 420ms; }
+.stagger-grid.stagger-grid--visible > *:nth-child(8) { animation-delay: 490ms; }
+.stagger-grid.stagger-grid--visible > *:nth-child(9) { animation-delay: 560ms; }
+.stagger-grid.stagger-grid--visible > *:nth-child(10) { animation-delay: 630ms; }
+.stagger-grid.stagger-grid--visible > *:nth-child(11) { animation-delay: 700ms; }
+.stagger-grid.stagger-grid--visible > *:nth-child(12) { animation-delay: 770ms; }
+
+/* Hero */
+.hero-badge {
+  animation: none;
+}
+
+.hero-title {
+  animation: none;
+}
+
+.hero-subtitle {
+  animation: none;
+}
+
+.hero-cta {
+  animation: none;
+}
+
+.hero-footnote {
+  animation: none;
+}
+
+.hero-glow {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  opacity: 0.35;
+  animation: none;
+  pointer-events: none;
+}
+
+/* Interactive elements */
+.card-interactive {
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.28s ease;
+}
+
+.card-interactive:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px -12px rgb(26 48 34 / 0.14);
+}
+
+.btn-motion {
+  transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.btn-motion:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.btn-motion:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+.icon-pop {
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.group:hover .icon-pop,
+.icon-pop:hover {
+  transform: scale(1.08);
+}
+
+.animate-stat {
+  animation: none;
+}
+
+.animate-progress-bar {
+  animation: none;
+}
+
+/* Modals */
+.modal-backdrop {
+  animation: none;
+}
+
+.modal-panel {
+  animation: none;
+}
+
+/* Loading shimmer */
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0eb 25%, #fafaf7 50%, #f0f0eb 75%);
+  background-size: 200% 100%;
+  animation: none;
+}
+
+/* Form focus */
+.input-motion {
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.input-motion:focus-within {
+  box-shadow: 0 0 0 3px rgb(45 106 79 / 0.12);
+}
+
+/* Tab underline */
+.tab-motion {
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.tab-motion::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 100%;
+  height: 2px;
+  background: #1a3022;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tab-motion.tab-motion--active::after {
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal,
+  .reveal-scale {
+    opacity: 1;
+    transform: none;
+  }
+
+  .stagger-grid > * {
+    opacity: 1;
+    transform: none;
+  }
+}
