@@ -1,0 +1,67 @@
+{
+  "appName": "Daurin",
+  "nav": {
+    "home": "Beranda",
+    "leaderboard": "Leaderboard",
+    "challenges": "Challenge",
+    "rewards": "Reward",
+    "profile": "Profil",
+    "settings": "Pengaturan"
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "subtitle": "Lihat peringkat pengguna terbaik dan raih posisi teratas!",
+    "filters": "Filter aktif",
+    "wilayah": "Wilayah",
+    "periode": "Periode",
+    "rank": "Peringkat",
+    "points": "poin",
+    "activeDays": "Aktif {{days}} hari"
+  },
+  "badges": {
+    "title": "Badges",
+    "subtitle": "Kumpulkan badge dan tunjukkan pencapaianmu!",
+    "collected": "Badge Terkumpul",
+    "locked": "Badge Terkunci",
+    "remaining": "Remaining",
+    "earned": "Didapatkan",
+    "locked": "Terkunci"
+  },
+  "challenges": {
+    "title": "Challenge",
+    "subtitle": "Ikuti tantangan seru dan raih poin bonus!",
+    "featured": "Challenge Unggulan",
+    "active": "Challenge Aktif",
+    "available": "Challenge Tersedia",
+    "join": "Ikut Challenge",
+    "cancel": "Batalkan Challenge",
+    "joined": "Sudah Diikuti",
+    "difficulty": {
+      "easy": "Mudah",
+      "medium": "Sedang",
+      "hard": "Sulit"
+    }
+  },
+  "settings": {
+    "title": "Pengaturan",
+    "subtitle": "Kelola akun dan preferensi aplikasi kamu",
+    "language": "Bahasa",
+    "languageDesc": "Pilih bahasa yang Anda gunakan",
+    "notifications": "Notifikasi",
+    "preferences": "Preferensi",
+    "help": "Bantuan",
+    "account": "Akun",
+    "logout": "Keluar dari Akun"
+  },
+  "common": {
+    "loading": "Memuat...",
+    "error": "Terjadi kesalahan",
+    "retry": "Coba Lagi",
+    "save": "Simpan",
+    "cancel": "Batal",
+    "close": "Tutup",
+    "back": "Kembali",
+    "next": "Lanjut",
+    "done": "Selesai"
+  }
+}

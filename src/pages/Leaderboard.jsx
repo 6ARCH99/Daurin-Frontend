@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../services/api.js';
 import ApiStatusBanner from '../components/ApiStatusBanner.jsx';
 
@@ -19,6 +20,7 @@ const PERIODE_OPTIONS = [
 
 
 const Leaderboard = () => {
+  const { t } = useTranslation();
   const [list, setList] = useState([]);
   const [badgeProgress, setBadgeProgress] = useState(null);
   const [loading, setLoading] = useState(true);

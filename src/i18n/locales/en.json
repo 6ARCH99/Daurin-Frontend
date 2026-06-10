@@ -1,0 +1,67 @@
+{
+  "appName": "Daurin",
+  "nav": {
+    "home": "Home",
+    "leaderboard": "Leaderboard",
+    "challenges": "Challenges",
+    "rewards": "Rewards",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "subtitle": "See the best users and reach the top!",
+    "filters": "Active filters",
+    "wilayah": "Region",
+    "periode": "Period",
+    "rank": "Rank",
+    "points": "points",
+    "activeDays": "Active {{days}} days"
+  },
+  "badges": {
+    "title": "Badges",
+    "subtitle": "Collect badges and show your achievements!",
+    "collected": "Collected Badges",
+    "locked": "Locked Badges",
+    "remaining": "Remaining",
+    "earned": "Earned",
+    "locked": "Locked"
+  },
+  "challenges": {
+    "title": "Challenges",
+    "subtitle": "Join fun challenges and earn bonus points!",
+    "featured": "Featured Challenge",
+    "active": "Active Challenges",
+    "available": "Available Challenges",
+    "join": "Join Challenge",
+    "cancel": "Cancel Challenge",
+    "joined": "Joined",
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account and app preferences",
+    "language": "Language",
+    "languageDesc": "Choose your preferred language",
+    "notifications": "Notifications",
+    "preferences": "Preferences",
+    "help": "Help",
+    "account": "Account",
+    "logout": "Logout"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Try Again",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "done": "Done"
+  }
+}
