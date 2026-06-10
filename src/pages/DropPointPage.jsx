@@ -1,44 +1,59 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
-import { Search, Navigation2, Filter, MapPin, X } from 'lucide-react';
+import { Search, Navigation2, Filter, MapPin, X, ChevronRight, Clock, Phone } from 'lucide-react';
 import { api } from '../services/api';
 
 // Simple Interactive Map Component using OpenStreetMap tiles
-const InteractiveMap = ({ dropPoints, userLocation, onMarkerClick }) => {
+const InteractiveMap = ({ dropPoints, userLocation, onMarkerClick, selectedPoint, onMapReady }) => {
   const mapRef = useRef(null);
   const [mapInstance, setMapInstance] = useState(null);
-  const [selectedPoint, setSelectedPoint] = useState(null);
   const [mapError, setMapError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const markersRef = useRef([]);
 
   useEffect(() => {
-    // Dynamic import of Leaflet
+    let mounted = true;
+    
     const initMap = async () => {
       try {
-        const L = await import('leaflet');
-        await import('leaflet/dist/leaflet.css');
+        setIsLoading(true);
+        
+        // Dynamic import leaflet
+        let L;
+        try {
+          const leaflet = await import('leaflet');
+          L = leaflet.default || leaflet;
+        } catch (e) {
+          console.warn('Leaflet not available, using fallback');
+          if (mounted) {
+            setMapError('Peta tidak tersedia saat ini');
+            setIsLoading(false);
+          }
+          return;
+        }
+        
+        if (!mounted || !mapRef.current) return;
 
-        if (!mapRef.current) return;
+        // Calculate center
+        let center = [-6.2088, 106.8456]; // Default Jakarta
+        if (selectedPoint?.lat && selectedPoint?.lng) {
+          center = [selectedPoint.lat, selectedPoint.lng];
+        } else if (userLocation?.lat && userLocation?.lng) {
+          center = [userLocation.lat, userLocation.lng];
+        } else if (dropPoints?.length > 0 && dropPoints[0].lat) {
+          center = [dropPoints[0].lat, dropPoints[0].lng];
+        }
 
-        // Fix default icon paths
-        delete L.Icon.Default.prototype._getIconUrl;
-        L.Icon.Default.mergeOptions({
-          iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-          iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-        });
+        // Create map
+        const map = L.map(mapRef.current).setView(center, selectedPoint ? 16 : 13);
 
-        const center = userLocation 
-          ? [userLocation.lat, userLocation.lng] 
-          : [-6.2088, 106.8456]; // Default to Jakarta
-
-        const map = L.map(mapRef.current).setView(center, 13);
-
+        // Add tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '&copy; OpenStreetMap contributors',
           maxZoom: 19,
         }).addTo(map);
 
         // Add user location marker
-        if (userLocation) {
+        if (userLocation?.lat && userLocation?.lng) {
           const userIcon = L.divIcon({
             className: 'custom-user-marker',
             html: `<div style="background-color: #1A3022; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>`,
@@ -49,42 +64,61 @@ const InteractiveMap = ({ dropPoints, userLocation, onMarkerClick }) => {
         }
 
         // Add drop point markers
-        const markers = [];
-        dropPoints.forEach((dp, index) => {
-          if (dp.lat && dp.lng) {
-            const marker = L.marker([dp.lat, dp.lng])
-              .addTo(map)
-              .bindPopup(`<b>${dp.name}</b><br/>${dp.address}<br/>${dp.isOpen ? 'Buka' : 'Tutup'}`);
-            marker.on('click', () => {
-              setSelectedPoint(dp);
-            });
-            markers.push({ marker, data: dp });
-          }
-        });
+        markersRef.current = [];
+        if (dropPoints && Array.isArray(dropPoints)) {
+          dropPoints.forEach((dp) => {
+            if (dp?.lat && dp?.lng) {
+              const isSelected = selectedPoint?.id === dp.id;
+              try {
+                const marker = L.marker([dp.lat, dp.lng], {
+                  icon: L.divIcon({
+                    className: 'custom-drop-marker',
+                    html: `<div style="background-color: ${isSelected ? '#EBA332' : '#68A67D'}; width: 24px; height: 24px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>`,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 24],
+                  })
+                })
+                  .addTo(map)
+                  .bindPopup(`<b>${dp.name || 'Drop Point'}</b><br/>${dp.address || ''}`);
+                
+                marker.on('click', () => onMarkerClick && onMarkerClick(dp));
+                markersRef.current.push({ marker, data: dp });
+              } catch (e) {
+                console.warn('Failed to add marker:', e);
+              }
+            }
+          });
+        }
 
-        setMapInstance({ map, markers, L });
+        if (mounted) {
+          setMapInstance({ map, L });
+          setIsLoading(false);
+          if (onMapReady) onMapReady(map);
+        }
       } catch (err) {
         console.error('Failed to load map:', err);
-        setMapError('Gagal memuat peta. Silakan coba lagi.');
+        if (mounted) {
+          setMapError('Gagal memuat peta. Silakan coba lagi.');
+          setIsLoading(false);
+        }
       }
     };
 
-    initMap();
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(initMap, 100);
 
     return () => {
+      mounted = false;
+      clearTimeout(timer);
       if (mapInstance?.map) {
-        mapInstance.map.remove();
+        try {
+          mapInstance.map.remove();
+        } catch (e) {
+          // Ignore cleanup errors
+        }
       }
     };
-  }, [dropPoints, userLocation]);
-
-  const handlePointAction = (action) => {
-    if (!selectedPoint) return;
-    if (action === 'directions') {
-      onMarkerClick(selectedPoint);
-    }
-    setSelectedPoint(null);
-  };
+  }, []); // Only init once
 
   if (mapError) {
     return (
@@ -92,6 +126,21 @@ const InteractiveMap = ({ dropPoints, userLocation, onMarkerClick }) => {
         <MapPin className="w-12 h-12 text-red-400" strokeWidth={1.5} />
         <p className="font-display text-xl font-semibold text-red-700">Gagal Memuat Peta</p>
         <p className="font-sans text-sm text-red-500">{mapError}</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="mt-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700"
+        >
+          Coba Lagi
+        </button>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="w-full h-[500px] bg-gray-50 rounded-[24px] border border-gray-200 flex flex-col items-center justify-center gap-3 p-6">
+        <div className="w-8 h-8 border-2 border-[#1A3022] border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-gray-500">Memuat peta...</p>
       </div>
     );
   }
@@ -99,28 +148,6 @@ const InteractiveMap = ({ dropPoints, userLocation, onMarkerClick }) => {
   return (
     <div className="relative w-full h-[500px] rounded-[24px] overflow-hidden border border-gray-200">
       <div ref={mapRef} className="w-full h-full" />
-      
-      {/* Selected Point Info Panel */}
-      {selectedPoint && (
-        <div className="absolute bottom-4 left-4 right-4 bg-white rounded-2xl p-4 shadow-lg border border-gray-100">
-          <div className="flex justify-between items-start mb-2">
-            <h3 className="font-bold text-[#1A3022] text-sm">{selectedPoint.name}</h3>
-            <button 
-              onClick={() => setSelectedPoint(null)}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-          <p className="text-xs text-gray-500 mb-3">{selectedPoint.address}</p>
-          <button
-            onClick={() => handlePointAction('directions')}
-            className="w-full bg-[#1A3022] text-white py-2 rounded-xl text-xs font-bold"
-          >
-            Lihat Petunjuk Arah
-          </button>
-        </div>
-      )}
     </div>
   );
 };
@@ -147,6 +174,7 @@ const DropPointPage = () => {
   const [coords, setCoords] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedPoint, setSelectedPoint] = useState(null);
 
   const fetchPoints = useCallback(async () => {
     setLoading(true);
@@ -184,7 +212,11 @@ const DropPointPage = () => {
     );
   };
 
-  const nearest = dropPoints[0];
+  const handlePointSelect = (point) => {
+    setSelectedPoint(point);
+    setViewMode('peta');
+  };
+
   const mapsUrl = (dp) =>
     `https://www.google.com/maps/dir/?api=1&destination=${dp.lat},${dp.lng}`;
 
@@ -288,7 +320,7 @@ const DropPointPage = () => {
                 {dropPoints.map((dp) => (
                   <div key={dp.id} className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
                     <div className="flex justify-between items-start mb-4">
-                      <div>
+                      <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <h3 className="font-display text-lg font-semibold text-[#1A3022]">{dp.name}</h3>
                           <span
@@ -301,58 +333,89 @@ const DropPointPage = () => {
                         </div>
                         <p className="font-sans text-xs font-normal text-gray-500">{dp.address}</p>
                       </div>
-                      <p className="font-sans text-sm font-semibold text-[#EBA332]">
-                        ⭐ {dp.rating}{' '}
-                        <span className="text-gray-400 font-normal">({dp.reviewCount})</span>
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-3 gap-4 mb-6">
-                      <div>
-                        <p className="font-sans text-[10px] font-bold uppercase text-gray-400 mb-1">Jarak</p>
-                        <p className="font-sans text-sm font-semibold text-[#1A3022]">
-                          {dp.distanceKm != null ? `${dp.distanceKm} km` : '—'}
+                      <div className="text-right ml-4">
+                        <p className="font-sans text-sm font-semibold text-[#EBA332]">
+                          ⭐ {dp.rating}
                         </p>
-                      </div>
-                      <div>
-                        <p className="font-sans text-[10px] font-bold uppercase text-gray-400 mb-1">Jam Buka</p>
-                        <p className="font-sans text-sm font-semibold text-[#1A3022]">
-                          {dp.openTime} - {dp.closeTime}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="font-sans text-[10px] font-bold uppercase text-gray-400 mb-1">Telepon</p>
-                        <p className="font-sans text-sm font-semibold text-[#1A3022]">{dp.phone || '—'}</p>
+                        <p className="font-sans text-xs text-gray-400">({dp.reviewCount} ulasan)</p>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                      <div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 p-4 bg-gray-50 rounded-xl">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-gray-400" />
+                        <div>
+                          <p className="font-sans text-[10px] text-gray-400">Jam Buka</p>
+                          <p className="font-sans text-xs font-semibold text-[#1A3022]">{dp.openTime} - {dp.closeTime}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-gray-400" />
+                        <div>
+                          <p className="font-sans text-[10px] text-gray-400">Telepon</p>
+                          <p className="font-sans text-xs font-semibold text-[#1A3022]">{dp.phone || '-'}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-gray-400" />
+                        <div>
+                          <p className="font-sans text-[10px] text-gray-400">Jarak</p>
+                          <p className="font-sans text-xs font-semibold text-[#1A3022]">{dp.distanceKm != null ? `${dp.distanceKm} km` : '-'}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Filter className="w-4 h-4 text-gray-400" />
+                        <div>
+                          <p className="font-sans text-[10px] text-gray-400">Kota</p>
+                          <p className="font-sans text-xs font-semibold text-[#1A3022]">{dp.city}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="flex-1">
                         <p className="font-sans text-[10px] font-bold uppercase text-gray-400 mb-2">
                           Material yang Diterima:
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          {(dp.materials || []).map((mat, i) => (
+                          {(dp.materials || '').split(',').map((mat, i) => (
                             <span
                               key={i}
                               className="font-sans text-[10px] font-semibold bg-[#F5F5F0] text-[#1A3022] px-3 py-1 rounded-full"
                             >
-                              {materialLabel(mat)}
+                              {mat.trim()}
                             </span>
                           ))}
                         </div>
                       </div>
+                    </div>
+
+                    <div className="flex gap-3 pt-4 border-t border-gray-100">
+                      <button
+                        onClick={() => handlePointSelect(dp)}
+                        className="flex-1 bg-[#1A3022] text-white py-3 rounded-xl font-sans text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#2d4a37]"
+                      >
+                        <MapPin className="w-4 h-4" />
+                        Lihat di Peta
+                      </button>
                       <a
                         href={mapsUrl(dp)}
                         target="_blank"
                         rel="noreferrer"
-                        className="font-sans text-xs font-semibold bg-[#1A3022] text-white px-5 py-2.5 rounded-xl shrink-0"
+                        className="flex-1 bg-white text-[#1A3022] border-2 border-[#1A3022] py-3 rounded-xl font-sans text-sm font-semibold flex items-center justify-center gap-2 hover:bg-gray-50"
                       >
-                        Lihat Petunjuk Arah
+                        <Navigation2 className="w-4 h-4" />
+                        Petunjuk Arah
                       </a>
                     </div>
                   </div>
                 ))}
                 {!loading && dropPoints.length === 0 && (
-                  <p className="font-sans text-sm text-gray-400 text-center py-16">Data tidak ditemukan.</p>
+                  <div className="text-center py-16 bg-white rounded-3xl border border-gray-100">
+                    <MapPin className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                    <p className="font-sans text-sm text-gray-400">Tidak ada drop point ditemukan.</p>
+                    <p className="font-sans text-xs text-gray-300 mt-1">Coba ubah filter atau kata kunci pencarian</p>
+                  </div>
                 )}
               </div>
             ) : (
@@ -360,30 +423,81 @@ const DropPointPage = () => {
                 dropPoints={dropPoints} 
                 userLocation={coords}
                 onMarkerClick={(dp) => window.open(mapsUrl(dp), '_blank')}
+                selectedPoint={selectedPoint}
               />
             )}
           </div>
 
-          {nearest && viewMode === 'daftar' && (
+          {viewMode === 'daftar' && (
             <div className="flex-1">
-              <div className="bg-[#68A67D] rounded-[24px] p-8 text-white sticky top-24">
-                <p className="font-sans text-[10px] font-bold uppercase tracking-widest text-white/80 mb-2">
-                  Terdekat dari Kamu
-                </p>
-                <h2 className="font-display text-2xl font-semibold mb-6">{nearest.name}</h2>
-                <div className="space-y-4 mb-8 font-sans text-sm font-medium">
-                  <p>🕒 {nearest.openTime} - {nearest.closeTime}</p>
-                  {nearest.distanceKm != null && <p>📍 {nearest.distanceKm} km dari lokasimu</p>}
-                  <p className="leading-relaxed opacity-95">{nearest.address}</p>
+              <div className="bg-gradient-to-br from-[#68A67D] to-[#1A3022] rounded-[24px] p-8 text-white sticky top-24">
+                <div className="flex items-center gap-2 mb-2">
+                  <MapPin className="w-5 h-5" />
+                  <p className="font-sans text-[10px] font-bold uppercase tracking-widest text-white/80">
+                    {selectedPoint ? 'Drop Point Terpilih' : 'Drop Point Terdekat'}
+                  </p>
                 </div>
-                <a
-                  href={mapsUrl(nearest)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block w-full text-center bg-[#1A3022] text-white py-4 rounded-2xl font-sans text-sm font-semibold"
-                >
-                  Petunjuk Arah
-                </a>
+                
+                {selectedPoint ? (
+                  <>
+                    <h2 className="font-display text-2xl font-semibold mb-2">{selectedPoint.name}</h2>
+                    <p className="font-sans text-sm text-white/80 mb-4">{selectedPoint.address}</p>
+                    <div className="flex items-center gap-2 mb-6">
+                      <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">
+                        ⭐ {selectedPoint.rating}
+                      </span>
+                      <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">
+                        {selectedPoint.city}
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setSelectedPoint(null)}
+                        className="flex-1 bg-white/20 text-white py-3 rounded-xl font-sans text-sm font-semibold hover:bg-white/30"
+                      >
+                        Tutup
+                      </button>
+                      <a
+                        href={mapsUrl(selectedPoint)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex-1 bg-white text-[#1A3022] py-3 rounded-xl font-sans text-sm font-semibold text-center hover:bg-gray-100"
+                      >
+                        Petunjuk Arah
+                      </a>
+                    </div>
+                  </>
+                ) : dropPoints[0] ? (
+                  <>
+                    <h2 className="font-display text-2xl font-semibold mb-4">{dropPoints[0].name}</h2>
+                    <div className="space-y-3 mb-8 font-sans text-sm font-medium">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-white/60" />
+                        <span>{dropPoints[0].openTime} - {dropPoints[0].closeTime}</span>
+                      </div>
+                      {dropPoints[0].distanceKm != null && (
+                        <div className="flex items-center gap-2">
+                          <Navigation2 className="w-4 h-4 text-white/60" />
+                          <span>{dropPoints[0].distanceKm} km dari lokasimu</span>
+                        </div>
+                      )}
+                      <p className="leading-relaxed opacity-95">{dropPoints[0].address}</p>
+                    </div>
+                    <a
+                      href={mapsUrl(dropPoints[0])}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block w-full text-center bg-white text-[#1A3022] py-4 rounded-2xl font-sans text-sm font-semibold hover:bg-gray-100"
+                    >
+                      Petunjuk Arah
+                    </a>
+                  </>
+                ) : (
+                  <div className="text-center py-8">
+                    <MapPin className="w-12 h-12 text-white/30 mx-auto mb-4" />
+                    <p className="text-white/60">Tidak ada drop point terdekat</p>
+                  </div>
+                )}
               </div>
             </div>
           )}

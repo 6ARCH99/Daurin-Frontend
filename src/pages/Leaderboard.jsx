@@ -16,6 +16,8 @@ const PERIODE_OPTIONS = [
   { value: 'tahun', label: 'Tahun', icon: '📊' },
 ];
 
+
+
 const Leaderboard = () => {
   const [list, setList] = useState([]);
   const [badgeProgress, setBadgeProgress] = useState(null);
@@ -34,7 +36,7 @@ const Leaderboard = () => {
     }
     setLoading(true);
     setError('');
-    Promise.all([api.getLeaderboard(10), api.getBadges()])
+    Promise.all([api.getLeaderboard(20, wilayah, periode), api.getBadges()])
       .then(([lb, b]) => {
         setList(lb.data.list ?? []);
         setBadgeProgress(b.data.progress ?? null);
@@ -46,7 +48,7 @@ const Leaderboard = () => {
         setError(err.message);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [wilayah, periode]);
 
   useEffect(() => {
     load();
@@ -57,8 +59,8 @@ const Leaderboard = () => {
     return arr.slice(0, 3);
   }, [list]);
 
-  const rank4to10 = useMemo(() => {
-    return [...list].filter((x) => x.rank >= 4 && x.rank <= 10).sort((a, b) => a.rank - b.rank);
+  const rank1to20 = useMemo(() => {
+    return [...list].filter((x) => x.rank >= 1 && x.rank <= 20).sort((a, b) => a.rank - b.rank);
   }, [list]);
 
   const formatPoints = (n) => (n != null ? Number(n).toLocaleString('id-ID') : '—');
@@ -209,10 +211,10 @@ const Leaderboard = () => {
         </div>
       </div>
 
-      {/* List Peringkat 4-10 */}
+      {/* List Peringkat 1-20 */}
       <div className="space-y-3">
-        <h4 className="font-bold text-[#1A3022] mb-4 font-heading">Peringkat 4-10</h4>
-        {rank4to10.map((item) => (
+        <h4 className="font-bold text-[#1A3022] mb-4 font-heading">Peringkat 1-20</h4>
+        {rank1to20.map((item) => (
           <div 
             key={item.userId} 
             className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${
@@ -222,7 +224,12 @@ const Leaderboard = () => {
             }`}
           >
             <div className="flex items-center gap-5">
-              <span className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 text-xs font-bold">
+              <span className={`w-8 h-8 flex items-center justify-center rounded-full text-xs font-bold ${
+                item.rank === 1 ? 'bg-yellow-100 text-yellow-600' :
+                item.rank === 2 ? 'bg-gray-100 text-gray-500' :
+                item.rank === 3 ? 'bg-orange-100 text-orange-600' :
+                'bg-gray-50 text-gray-400'
+              }`}>
                 {item.rank}
               </span>
               <div>
@@ -234,7 +241,7 @@ const Leaderboard = () => {
             </div>
             <div className="flex items-center gap-2">
                <span className="text-green-500 text-[10px]">📈</span>
-               <span className="font-black text-[#1A3022]">{formatPoints(item.points)}</span>
+               <span className="font-black text-[#1A3022]">{formatPoints(item.points)} poin</span>
             </div>
           </div>
         ))}

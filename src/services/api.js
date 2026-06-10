@@ -121,8 +121,9 @@ export const api = {
   joinChallenge: (challengeId) =>
     request(`/api/challenges/${challengeId}/join`, { method: "POST" }),
   cancelChallenge: (challengeId) =>
-    request(`/api/challenges/${challengeId}/cancel`, { method: "POST" }),
-  getLeaderboard: (limit = 10) => request(`/api/leaderboard?limit=${limit}`),
+    request(`/api/challenges/${challengeId}/cancel`, { method: "DELETE" }),
+  getLeaderboard: (limit = 20, wilayah = 'kota', periode = 'minggu') => 
+    request(`/api/leaderboard?limit=${limit}&wilayah=${wilayah}&periode=${periode}`),
   getBadges: () => request("/api/badges"),
   getProfile: () => request("/api/profile"),
   updateProfile: (body) =>

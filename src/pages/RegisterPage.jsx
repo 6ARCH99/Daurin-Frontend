@@ -103,13 +103,8 @@ const RegisterPage = ({ onBack, onGoToLogin, onContinue, onRegisterSuccess }) =>
     window.location.href = url;
   };
 
-  const openTerms = () => {
-    window.location.href = '/terms';
-  };
-
-  const openPrivacy = () => {
-    window.location.href = '/privacy';
-  };
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#F5F5F0] font-sans pb-20">
@@ -230,7 +225,7 @@ const RegisterPage = ({ onBack, onGoToLogin, onContinue, onRegisterSuccess }) =>
 
             <div className="bg-[#D8E6DC] p-4 rounded-xl text-center">
               <p className="text-[11px] text-[#1A3022]">
-                Saya setuju dengan <button type="button" onClick={openTerms} className="font-bold underline cursor-pointer hover:text-[#2D6A4F]">Syarat & Ketentuan</button> dan <button type="button" onClick={openPrivacy} className="font-bold underline cursor-pointer hover:text-[#2D6A4F]">Kebijakan Privasi</button> Tunas
+                Saya setuju dengan <button type="button" onClick={() => setShowTermsModal(true)} className="font-bold underline cursor-pointer hover:text-[#2D6A4F]">Syarat & Ketentuan</button> dan <button type="button" onClick={() => setShowPrivacyModal(true)} className="font-bold underline cursor-pointer hover:text-[#2D6A4F]">Kebijakan Privasi</button> Tunas
               </p>
             </div>
 
@@ -271,6 +266,46 @@ const RegisterPage = ({ onBack, onGoToLogin, onContinue, onRegisterSuccess }) =>
           </div>
         </div>
       </div>
+
+      {/* Terms Modal */}
+      {showTermsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowTermsModal(false)}>
+          <div className="bg-white rounded-3xl p-8 max-w-lg w-full max-h-[80vh] overflow-y-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-[#1A3022]">Syarat & Ketentuan</h2>
+              <button onClick={() => setShowTermsModal(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 font-bold">✕</button>
+            </div>
+            <div className="space-y-4 text-sm text-gray-600 leading-relaxed">
+              <p><strong className="text-[#1A3022]">1. Penerimaan Syarat</strong><br/>Dengan mendaftar dan menggunakan aplikasi Tunas, Anda menyetujui semua syarat dan ketentuan yang berlaku.</p>
+              <p><strong className="text-[#1A3022]">2. Kelayakan</strong><br/>Pengguna harus berusia minimal 18 tahun atau memiliki izin dari orang tua/wali untuk menggunakan layanan ini.</p>
+              <p><strong className="text-[#1A3022]">3. Akun Pengguna</strong><br/>Anda bertanggung jawab untuk menjaga kerahasiaan informasi akun dan password Anda.</p>
+              <p><strong className="text-[#1A3022]">4. Program Poin</strong><br/>Poin yang dikumpulkan dapat ditukarkan dengan reward sesuai ketentuan yang berlaku.</p>
+              <p><strong className="text-[#1A3022]">5. Pembatasan Tanggung Jawab</strong><br/>Tunas tidak bertanggung jawab atas kerugian yang timbul dari penggunaan layanan ini.</p>
+            </div>
+            <button onClick={() => setShowTermsModal(false)} className="w-full mt-6 bg-[#1A3022] text-white py-4 rounded-xl font-bold hover:opacity-90 transition-opacity">Mengerti</button>
+          </div>
+        </div>
+      )}
+
+      {/* Privacy Modal */}
+      {showPrivacyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowPrivacyModal(false)}>
+          <div className="bg-white rounded-3xl p-8 max-w-lg w-full max-h-[80vh] overflow-y-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-[#1A3022]">Kebijakan Privasi</h2>
+              <button onClick={() => setShowPrivacyModal(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 font-bold">✕</button>
+            </div>
+            <div className="space-y-4 text-sm text-gray-600 leading-relaxed">
+              <p><strong className="text-[#1A3022]">1. Informasi yang Kami Kumpulkan</strong><br/>Kami mengumpulkan informasi pribadi seperti nama, email, nomor telepon, alamat, dan data penggunaan aplikasi.</p>
+              <p><strong className="text-[#1A3022]">2. Penggunaan Informasi</strong><br/>Informasi digunakan untuk menyediakan layanan, memproses transaksi, mengirim notifikasi, dan meningkatkan pengalaman pengguna.</p>
+              <p><strong className="text-[#1A3022]">3. Perlindungan Data</strong><br/>Kami menggunakan langkah-langkah keamanan teknis dan organisasi untuk melindungi data Anda dari akses tidak sah.</p>
+              <p><strong className="text-[#1A3022]">4. Berbagi Informasi</strong><br/>Kami tidak menjual informasi pribadi Anda. Data hanya dibagikan dengan mitra terpercaya untuk operasional layanan.</p>
+              <p><strong className="text-[#1A3022]">5. Hak Pengguna</strong><br/>Anda berhak mengakses, mengubah, atau menghapus data pribadi Anda. Hubungi kami untuk permintaan tersebut.</p>
+            </div>
+            <button onClick={() => setShowPrivacyModal(false)} className="w-full mt-6 bg-[#1A3022] text-white py-4 rounded-xl font-bold hover:opacity-90 transition-opacity">Mengerti</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
