@@ -10,12 +10,9 @@ const InteractiveMap = ({ dropPoints, userLocation, onMarkerClick, selectedPoint
   const markersRef = useRef([]);
   const [mapError, setMapError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const isInitializedRef = useRef(false);
-
-  // Initialize map only once
+  const routeRef = useRef(null); // store route polyline
+  // Initialize map
   useEffect(() => {
-    if (isInitializedRef.current) return;
-    isInitializedRef.current = true;
     
     let mounted = true;
     
@@ -94,17 +91,20 @@ const InteractiveMap = ({ dropPoints, userLocation, onMarkerClick, selectedPoint
     let newCenter = null;
     let newZoom = null;
     
-    if (selectedPoint?.lat && selectedPoint?.lng) {
-      newCenter = [selectedPoint.lat, selectedPoint.lng];
-      newZoom = 16;
-    } else if (userLocation?.lat && userLocation?.lng) {
-      newCenter = [userLocation.lat, userLocation.lng];
-    } else if (dropPoints?.length > 0 && dropPoints[0]?.lat) {
-      newCenter = [dropPoints[0].lat, dropPoints[0].lng];
-    }
-    
-    if (newCenter) {
-      map.setView(newCenter, newZoom || map.getZoom());
+    // If a route should be displayed (selected point + user location), draw a polyline
+    if (selectedPoint?.lat && selectedPoint?.lng && userLocation?.lat && userLocation?.lng) {
+      // Remove previous route if any
+      if (routeRef.current) {
+        map.removeLayer(routeRef.current);
+        routeRef.current = null;
+      }
+      const latlngs = [
+        [userLocation.lat, userLocation.lng],
+        [selectedPoint.lat, selectedPoint.lng],
+      ];
+      routeRef.current = L.polyline(latlngs, { color: '#EBA332', weight: 4 }).addTo(map);
+      // Adjust view to include both points and route
+      map.fitBounds(routeRef.current.getBounds(), { padding: [50, 50] });
     }
 
     // Clear existing markers
@@ -178,17 +178,14 @@ const InteractiveMap = ({ dropPoints, userLocation, onMarkerClick, selectedPoint
     );
   }
 
-  if (isLoading) {
-    return (
-      <div className="w-full h-[500px] bg-gray-50 rounded-[24px] border border-gray-200 flex flex-col items-center justify-center gap-3 p-6">
-        <div className="w-8 h-8 border-2 border-[#1A3022] border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm text-gray-500">Memuat peta...</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="relative w-full h-[500px] rounded-[24px] overflow-hidden border border-gray-200">
+    <div className="relative w-full h-[500px] rounded-[24px] overflow-hidden border border-gray-200 bg-gray-50">
+      {isLoading && (
+        <div className="absolute inset-0 z-[400] flex flex-col items-center justify-center gap-3 bg-gray-50">
+          <div className="w-8 h-8 border-4 border-gray-200 border-t-[#1A3022] rounded-full animate-[spin_1s_linear_infinite]" />
+          <p className="text-sm text-gray-500">Memuat peta...</p>
+        </div>
+      )}
       <div ref={mapRef} className="w-full h-full" />
     </div>
   );
@@ -361,10 +358,29 @@ const DropPointPage = () => {
     );
   };
 
+  const [distanceToPoint, setDistanceToPoint] = useState(null);
   const handlePointSelect = (point) => {
     setSelectedPoint(point);
     setViewMode('peta');
+    // calculate distance if we have user location
+    if (coords?.lat && coords?.lng && point?.lat && point?.lng) {
+      const R = 6371; // km
+      const dLat = ((point.lat - coords.lat) * Math.PI) / 180;
+      const dLng = ((point.lng - coords.lng) * Math.PI) / 180;
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos((coords.lat * Math.PI) / 180) *
+          Math.cos((point.lat * Math.PI) / 180) *
+          Math.sin(dLng / 2) *
+          Math.sin(dLng / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const d = R * c;
+      setDistanceToPoint(d.toFixed(2));
+    } else {
+      setDistanceToPoint(null);
+    }
   };
+
 
   const mapsUrl = (dp) =>
     `https://www.google.com/maps/dir/?api=1&destination=${dp.lat},${dp.lng}`;
@@ -541,21 +557,25 @@ const DropPointPage = () => {
 
                     <div className="flex gap-3 pt-4 border-t border-gray-100">
                       <button
-                        onClick={() => handlePointSelect(dp)}
+                        onClick={() => {
+                          setSelectedPoint(dp);
+                          setViewMode('peta');
+                        }}
                         className="flex-1 bg-[#1A3022] text-white py-3 rounded-xl font-sans text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#2d4a37]"
                       >
                         <MapPin className="w-4 h-4" />
                         Lihat di Peta
                       </button>
-                      <a
-                        href={mapsUrl(dp)}
-                        target="_blank"
-                        rel="noreferrer"
+                      <button
+                        onClick={() => {
+                          setSelectedPoint(dp);
+                          setViewMode('peta');
+                        }}
                         className="flex-1 bg-white text-[#1A3022] border-2 border-[#1A3022] py-3 rounded-xl font-sans text-sm font-semibold flex items-center justify-center gap-2 hover:bg-gray-50"
                       >
                         <Navigation2 className="w-4 h-4" />
                         Petunjuk Arah
-                      </a>
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -571,7 +591,10 @@ const DropPointPage = () => {
               <InteractiveMap 
                 dropPoints={dropPoints} 
                 userLocation={coords}
-                onMarkerClick={(dp) => window.open(mapsUrl(dp), '_blank')}
+                onMarkeronClick={(dp) => {
+                  setSelectedPoint(dp);
+                  setViewMode('peta');
+                }}
                 selectedPoint={selectedPoint}
               />
             )}
@@ -598,6 +621,11 @@ const DropPointPage = () => {
                       <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">
                         {selectedPoint.city}
                       </span>
+                      {distanceToPoint && (
+                        <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold">
+                          {distanceToPoint} km
+                        </span>
+                      )}
                     </div>
                     <div className="flex gap-2">
                       <button
