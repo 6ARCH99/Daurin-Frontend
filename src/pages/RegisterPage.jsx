@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import LogoDaurin from '../assets/Logo Daurin.jpeg';
 import { api, setAuth } from '../services/api.js';
+import { User, Phone, Mail, Lock, MapPin, Camera, X } from 'lucide-react';
 
 const RegisterPage = ({ onBack, onGoToLogin, onContinue, onRegisterSuccess }) => {
   const [formData, setFormData] = useState({
@@ -9,7 +10,8 @@ const RegisterPage = ({ onBack, onGoToLogin, onContinue, onRegisterSuccess }) =>
     email: '',
     password: '',
     confirmPassword: '',
-    alamat: '' // Tambahkan state alamat
+    alamat: '',
+    referralCode: '' // Add referral code field
   });
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
@@ -52,6 +54,7 @@ const RegisterPage = ({ onBack, onGoToLogin, onContinue, onRegisterSuccess }) =>
         password: formData.password,
         phone: formData.telepon,
         address: formData.alamat,
+        referralCode: formData.referralCode || undefined,
       });
       setAuth(token, {
         id: user.id,
@@ -76,31 +79,6 @@ const RegisterPage = ({ onBack, onGoToLogin, onContinue, onRegisterSuccess }) =>
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleGoogleLogin = () => {
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    if (!clientId) {
-      alert('Google login belum dikonfigurasi');
-      return;
-    }
-    const redirectUri = `${window.location.origin}/oauth/callback/google`;
-    const scope = 'openid email profile';
-    const state = btoa(JSON.stringify({ action: 'register', nonce: Date.now() }));
-    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token id_token&scope=${encodeURIComponent(scope)}&state=${encodeURIComponent(state)}&nonce=${Date.now()}`;
-    window.location.href = url;
-  };
-
-  const handleFacebookLogin = () => {
-    const appId = import.meta.env.VITE_FACEBOOK_APP_ID;
-    if (!appId) {
-      alert('Facebook login belum dikonfigurasi');
-      return;
-    }
-    const redirectUri = `${window.location.origin}/oauth/callback/facebook`;
-    const state = btoa(JSON.stringify({ action: 'register', nonce: Date.now() }));
-    const url = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${encodeURIComponent(state)}&scope=email,public_profile`;
-    window.location.href = url;
   };
 
   const [showTermsModal, setShowTermsModal] = useState(false);
@@ -150,7 +128,7 @@ const RegisterPage = ({ onBack, onGoToLogin, onContinue, onRegisterSuccess }) =>
               <div className="text-left">
                 <label className="text-xs font-bold text-[#1A3022] block mb-2">Nama Lengkap *</label>
                 <div className="flex items-center gap-3 bg-[#F5F5F0] px-4 py-4 rounded-xl border border-transparent focus-within:border-[#2D6A4F] transition-all">
-                  <span className="text-gray-400">👤</span>
+                  <User size={18} className="text-gray-400" />
                   <input 
                     type="text" placeholder="Contoh: Budi Santoso" className="bg-transparent w-full outline-none text-sm"
                     onChange={(e) => setFormData({...formData, nama: e.target.value})}
@@ -161,7 +139,7 @@ const RegisterPage = ({ onBack, onGoToLogin, onContinue, onRegisterSuccess }) =>
               <div className="text-left">
                 <label className="text-xs font-bold text-[#1A3022] block mb-2">Nomor Telepon *</label>
                 <div className="flex items-center gap-3 bg-[#F5F5F0] px-4 py-4 rounded-xl border border-transparent focus-within:border-[#2D6A4F] transition-all">
-                  <span className="text-gray-400">📞</span>
+                  <Phone size={18} className="text-gray-400" />
                   <input 
                     type="tel" placeholder="08123456789" className="bg-transparent w-full outline-none text-sm"
                     onChange={(e) => setFormData({...formData, telepon: e.target.value})}
@@ -174,7 +152,7 @@ const RegisterPage = ({ onBack, onGoToLogin, onContinue, onRegisterSuccess }) =>
             <div className="text-left">
               <label className="text-xs font-bold text-[#1A3022] block mb-2">Email *</label>
               <div className="flex items-center gap-3 bg-[#F5F5F0] px-4 py-4 rounded-xl border border-transparent focus-within:border-[#2D6A4F] transition-all">
-                <span className="text-gray-400">✉</span>
+                <Mail size={18} className="text-gray-400" />
                 <input 
                   type="email" placeholder="nama@email.com" className="bg-transparent w-full outline-none text-sm"
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
@@ -187,7 +165,7 @@ const RegisterPage = ({ onBack, onGoToLogin, onContinue, onRegisterSuccess }) =>
               <div className="text-left">
                 <label className="text-xs font-bold text-[#1A3022] block mb-2">Password *</label>
                 <div className="flex items-center gap-3 bg-[#F5F5F0] px-4 py-4 rounded-xl border border-transparent focus-within:border-[#2D6A4F] transition-all">
-                  <span className="text-gray-400">🔒</span>
+                  <Lock size={18} className="text-gray-400" />
                   <input 
                     type="password" placeholder="Minimal 8 karakter" className="bg-transparent w-full outline-none text-sm"
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
@@ -198,7 +176,7 @@ const RegisterPage = ({ onBack, onGoToLogin, onContinue, onRegisterSuccess }) =>
               <div className="text-left">
                 <label className="text-xs font-bold text-[#1A3022] block mb-2">Konfirmasi Password *</label>
                 <div className="flex items-center gap-3 bg-[#F5F5F0] px-4 py-4 rounded-xl border border-transparent focus-within:border-[#2D6A4F] transition-all">
-                  <span className="text-gray-400">🔒</span>
+                  <Lock size={18} className="text-gray-400" />
                   <input 
                     type="password" placeholder="Ulangi password" className="bg-transparent w-full outline-none text-sm"
                     onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
@@ -212,7 +190,7 @@ const RegisterPage = ({ onBack, onGoToLogin, onContinue, onRegisterSuccess }) =>
             <div className="text-left">
               <label className="text-xs font-bold text-[#1A3022] block mb-2">Alamat Lengkap *</label>
               <div className="flex items-start gap-3 bg-[#F5F5F0] px-4 py-4 rounded-xl border border-transparent focus-within:border-[#2D6A4F] transition-all">
-                <span className="text-gray-400 mt-0.5">📍</span>
+                <MapPin size={18} className="text-gray-400 mt-0.5" />
                 <textarea 
                   rows="2"
                   placeholder="Jl. Contoh No. 123, RT 01/RW 02, Kelurahan, Kecamatan, Kota" 
@@ -229,6 +207,22 @@ const RegisterPage = ({ onBack, onGoToLogin, onContinue, onRegisterSuccess }) =>
               </p>
             </div>
 
+            {/* Referral Code Input */}
+            <div className="text-left">
+              <label className="text-xs font-bold text-[#1A3022] block mb-2">Kode Referral (Opsional)</label>
+              <div className="flex items-center gap-3 bg-[#F5F5F0] px-4 py-4 rounded-xl border border-transparent focus-within:border-[#2D6A4F] transition-all">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                <input 
+                  type="text" 
+                  placeholder="Masukkan kode referral (jika ada)" 
+                  className="bg-transparent w-full outline-none text-sm"
+                  value={formData.referralCode}
+                  onChange={(e) => setFormData({...formData, referralCode: e.target.value.toUpperCase()})}
+                />
+              </div>
+              <p className="text-[10px] text-gray-400 mt-1">Dapatkan bonus poin dengan menggunakan kode referral teman</p>
+            </div>
+
             {submitError && (
               <p className="text-red-600 text-xs font-bold bg-red-50 p-3 rounded-xl">{submitError}</p>
             )}
@@ -240,23 +234,6 @@ const RegisterPage = ({ onBack, onGoToLogin, onContinue, onRegisterSuccess }) =>
             >
               {loading ? 'Mendaftar…' : 'Daftar'} <span>→</span>
             </button>
-
-            {/* Penambahan Divider & Social Register sesuai desain */}
-            <div className="relative my-8 text-center">
-              <hr className="border-gray-100" />
-              <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-4 text-[10px] text-gray-400 font-bold uppercase tracking-widest">Atau Daftar Dengan</span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button type="button" onClick={handleGoogleLogin} className="flex items-center justify-center gap-3 border border-gray-200 py-3 rounded-xl hover:bg-gray-50 transition-all text-xs font-bold text-gray-600">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-4 h-4" />
-                Daftar dengan Google
-              </button>
-              <button type="button" onClick={handleFacebookLogin} className="flex items-center justify-center gap-3 bg-[#1877F2] text-white py-3 rounded-xl hover:opacity-90 transition-all text-xs font-bold">
-                <span className="bg-white text-[#1877F2] rounded-full w-4 h-4 flex items-center justify-center text-[10px]">f</span>
-                Daftar dengan Facebook
-              </button>
-            </div>
           </form>
 
           <div className="mt-8 text-center">
@@ -273,7 +250,7 @@ const RegisterPage = ({ onBack, onGoToLogin, onContinue, onRegisterSuccess }) =>
           <div className="bg-white rounded-3xl p-8 max-w-lg w-full max-h-[80vh] overflow-y-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-[#1A3022]">Syarat & Ketentuan</h2>
-              <button onClick={() => setShowTermsModal(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 font-bold">✕</button>
+              <button onClick={() => setShowTermsModal(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 font-bold"><X size={16} /></button>
             </div>
             <div className="space-y-4 text-sm text-gray-600 leading-relaxed">
               <p><strong className="text-[#1A3022]">1. Penerimaan Syarat</strong><br/>Dengan mendaftar dan menggunakan aplikasi Tunas, Anda menyetujui semua syarat dan ketentuan yang berlaku.</p>
@@ -293,7 +270,7 @@ const RegisterPage = ({ onBack, onGoToLogin, onContinue, onRegisterSuccess }) =>
           <div className="bg-white rounded-3xl p-8 max-w-lg w-full max-h-[80vh] overflow-y-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-[#1A3022]">Kebijakan Privasi</h2>
-              <button onClick={() => setShowPrivacyModal(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 font-bold">✕</button>
+              <button onClick={() => setShowPrivacyModal(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 font-bold"><X size={16} /></button>
             </div>
             <div className="space-y-4 text-sm text-gray-600 leading-relaxed">
               <p><strong className="text-[#1A3022]">1. Informasi yang Kami Kumpulkan</strong><br/>Kami mengumpulkan informasi pribadi seperti nama, email, nomor telepon, alamat, dan data penggunaan aplikasi.</p>

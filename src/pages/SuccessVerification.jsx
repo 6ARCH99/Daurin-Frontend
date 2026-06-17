@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Leaf } from 'lucide-react';
 
 const SuccessVerification = ({ onComplete }) => {
   useEffect(() => {
@@ -15,7 +16,7 @@ const SuccessVerification = ({ onComplete }) => {
       {/* Navbar Minimalis */}
       <nav className="flex justify-between items-center px-10 py-6">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-[#1A3022] rounded-full flex items-center justify-center text-white text-xs">🌱</div>
+          <div className="w-8 h-8 bg-[#1A3022] rounded-full flex items-center justify-center text-white text-xs"><Leaf size={16} /></div>
           <span className="text-xl font-bold text-[#1A3022]">Daurin.</span>
         </div>
         

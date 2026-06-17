@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '../services/api.js';
 import ApiStatusBanner from '../components/ApiStatusBanner.jsx';
+import { Trophy, Target, Clock, Calendar, Users, Medal, Gift, Lightbulb, AlertTriangle, Ban, Rocket } from 'lucide-react';
 
 const Challenge = () => {
   const [overview, setOverview] = useState(null);
@@ -77,14 +78,20 @@ const Challenge = () => {
     [load]
   );
 
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    setNow(Date.now());
+  }, [featured?.endsAt]);
+
   const featuredEndsText = useMemo(() => {
     if (!featured?.endsAt) return '—';
     const daysLeft = Math.max(
       0,
-      Math.ceil((new Date(featured.endsAt).getTime() - Date.now()) / 86400000)
+      Math.ceil((new Date(featured.endsAt).getTime() - now) / 86400000)
     );
     return daysLeft <= 1 ? 'Berakhir hari ini' : `Berakhir dalam ${daysLeft} hari`;
-  }, [featured?.endsAt]);
+  }, [featured?.endsAt, now]);
 
   const formatPoints = (n) => (n != null ? Number(n).toLocaleString('id-ID') : '—');
 
@@ -93,7 +100,7 @@ const Challenge = () => {
       {/* Header */}
       <div className="mb-10">
         <h1 className="text-4xl font-bold flex items-center gap-2">
-          Challenge <span className="text-2xl">🎯</span>
+          Challenge <Target className="w-8 h-8 text-[#D99A29]" />
         </h1>
         <p className="text-gray-500 mt-2">Ikuti tantangan seru dan raih poin bonus!</p>
         <ApiStatusBanner error={error} loading={loading} />
@@ -312,23 +319,24 @@ const Challenge = () => {
             {/* Meta info */}
             <div className="flex flex-wrap gap-2 mb-4">
               <span className="text-xs font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-lg flex items-center gap-1">
-                🎁 +{selectedChallenge.rewardPoints} pts
+                <Gift size={14} /> +{selectedChallenge.rewardPoints} pts
               </span>
               <span className="text-xs font-bold text-gray-500 bg-gray-50 px-3 py-1.5 rounded-lg flex items-center gap-1">
-                🕒 {selectedChallenge.durationDays} hari
+                <Clock size={14} /> {selectedChallenge.durationDays} hari
               </span>
               {selectedChallenge.joinedCount != null && (
                 <span className="text-xs font-bold text-purple-500 bg-purple-50 px-3 py-1.5 rounded-lg flex items-center gap-1">
-                  👥 {selectedChallenge.joinedCount} peserta
+                  <Users size={14} /> {selectedChallenge.joinedCount} peserta
                 </span>
               )}
               {selectedChallenge.difficulty && (
-                <span className={`text-xs font-bold px-3 py-1.5 rounded-lg ${
+                <span className={`text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 ${
                   selectedChallenge.difficulty === 'easy' ? 'text-blue-400 bg-blue-50' :
                   selectedChallenge.difficulty === 'hard' ? 'text-red-400 bg-red-50' :
                   'text-orange-400 bg-orange-50'
                 }`}>
-                  {selectedChallenge.difficulty === 'easy' ? '🟢' : selectedChallenge.difficulty === 'hard' ? '🔴' : '🟡'} {selectedChallenge.difficulty}
+                  <div className={`w-2 h-2 rounded-full ${selectedChallenge.difficulty === 'easy' ? 'bg-blue-400' : selectedChallenge.difficulty === 'hard' ? 'bg-red-400' : 'bg-orange-400'}`} />
+                  {selectedChallenge.difficulty}
                 </span>
               )}
             </div>
@@ -358,7 +366,7 @@ const Challenge = () => {
 
             {/* Rules / Tips */}
             <div className="bg-[#F9F7F2] rounded-2xl p-4 mb-6">
-              <h4 className="text-xs font-bold text-[#1A3022] mb-2 flex items-center gap-1">💡 Cara Menyelesaikan</h4>
+              <h4 className="text-xs font-bold text-[#1A3022] mb-2 flex items-center gap-1"><Lightbulb size={14} /> Cara Menyelesaikan</h4>
               <ul className="space-y-1.5">
                 <li className="text-[11px] text-gray-500 flex items-start gap-2">
                   <span className="text-green-500 mt-0.5">•</span> Setor sampah sesuai target yang ditentukan
@@ -380,9 +388,9 @@ const Challenge = () => {
                     <>
                       <button
                         onClick={() => { cancel(selectedChallenge.id); setConfirmingCancel(null); }}
-                        className="flex-1 bg-red-500 text-white font-bold py-3 rounded-xl hover:bg-red-600 transition-colors text-sm"
+                        className="flex-1 bg-red-500 text-white font-bold py-3 rounded-xl hover:bg-red-600 transition-colors text-sm flex items-center justify-center gap-1"
                       >
-                        ⚠️ Ya, Batalkan
+                        <AlertTriangle size={16} /> Ya, Batalkan
                       </button>
                       <button
                         onClick={() => setConfirmingCancel(null)}
@@ -394,9 +402,9 @@ const Challenge = () => {
                   ) : (
                     <button
                       onClick={() => setConfirmingCancel(selectedChallenge.id)}
-                      className="flex-1 bg-red-50 text-red-600 font-bold py-3 rounded-xl hover:bg-red-100 transition-colors text-sm border border-red-100"
+                      className="flex-1 bg-red-50 text-red-600 font-bold py-3 rounded-xl hover:bg-red-100 transition-colors text-sm border border-red-100 flex items-center justify-center gap-1"
                     >
-                      🚫 Batalkan Challenge
+                      <Ban size={16} /> Batalkan Challenge
                     </button>
                   )}
                 </>
@@ -405,7 +413,7 @@ const Challenge = () => {
                   onClick={() => join(selectedChallenge.id)}
                   className="flex-1 bg-[#1A2E35] text-white font-bold py-3 rounded-xl hover:opacity-90 transition-opacity text-sm flex items-center justify-center gap-2"
                 >
-                  🚀 Ikut Challenge <span className="text-green-400">+{selectedChallenge.rewardPoints} pts</span>
+                  <Rocket size={16} /> Ikut Challenge <span className="text-green-400">+{selectedChallenge.rewardPoints} pts</span>
                 </button>
               ) : null}
             </div>

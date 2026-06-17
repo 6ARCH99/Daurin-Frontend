@@ -2,19 +2,20 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../services/api.js';
 import ApiStatusBanner from '../components/ApiStatusBanner.jsx';
+import { Trophy, Home, Building2, Map, Globe, Calendar, Crown, Flame, TrendingUp } from 'lucide-react';
 
 const WILAYAH_OPTIONS = [
-  { value: 'rt', label: 'RT', icon: '🏘️' },
-  { value: 'kota', label: 'Kota', icon: '🏙️' },
-  { value: 'provinsi', label: 'Provinsi', icon: '🗺️' },
-  { value: 'negara', label: 'Negara', icon: '🌍' },
+  { value: 'rt', label: 'RT', Icon: Home },
+  { value: 'kota', label: 'Kota', Icon: Building2 },
+  { value: 'provinsi', label: 'Provinsi', Icon: Map },
+  { value: 'negara', label: 'Negara', Icon: Globe },
 ];
 
 const PERIODE_OPTIONS = [
-  { value: 'hari', label: 'Hari', icon: '📅' },
-  { value: 'minggu', label: 'Minggu', icon: '📆' },
-  { value: 'bulan', label: 'Bulan', icon: '🗓️' },
-  { value: 'tahun', label: 'Tahun', icon: '📊' },
+  { value: 'hari', label: 'Hari', Icon: Calendar },
+  { value: 'minggu', label: 'Minggu', Icon: Calendar },
+  { value: 'bulan', label: 'Bulan', Icon: Calendar },
+  { value: 'tahun', label: 'Tahun', Icon: TrendingUp },
 ];
 
 
@@ -53,7 +54,13 @@ const Leaderboard = () => {
   }, [wilayah, periode]);
 
   useEffect(() => {
-    load();
+    let mounted = true;
+    const runLoad = async () => {
+      if (!mounted) return;
+      await load();
+    };
+    runLoad();
+    return () => { mounted = false; };
   }, [load]);
 
   const top3 = useMemo(() => {
@@ -75,7 +82,7 @@ const Leaderboard = () => {
       {/* Header Halaman */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold flex items-center gap-2 font-heading">
-          Leaderboard <span className="text-2xl">🏆</span>
+          Leaderboard <Trophy className="w-8 h-8 text-[#D99A29]" />
         </h1>
         <p className="text-gray-500 text-sm mt-1">Lihat peringkat pengguna terbaik dan raih posisi teratas!</p>
         <ApiStatusBanner error={error} loading={loading} />
@@ -95,20 +102,20 @@ const Leaderboard = () => {
         <div className="flex flex-col sm:flex-row gap-6">
           {/* Wilayah Filter */}
           <div className="flex-1">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 block">🗺️ Wilayah</span>
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 block flex items-center gap-1"><Map size={12} /> Wilayah</span>
             <div className="flex flex-wrap gap-2">
               {WILAYAH_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
                   type="button"
                   onClick={() => setWilayah(opt.value)}
-                  className={`text-xs font-bold py-2 px-4 rounded-full transition-all duration-200 ${
+                  className={`text-xs font-bold py-2 px-4 rounded-full transition-all duration-200 flex items-center gap-1 ${
                     wilayah === opt.value
                       ? 'bg-[#1A3022] text-white shadow-md scale-105'
                       : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700'
                   }`}
                 >
-                  {opt.icon} {opt.label}
+                  <opt.Icon size={12} /> {opt.label}
                 </button>
               ))}
             </div>
@@ -119,20 +126,20 @@ const Leaderboard = () => {
 
           {/* Periode Filter */}
           <div className="flex-1">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 block">📅 Periode</span>
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 block flex items-center gap-1"><Calendar size={12} /> Periode</span>
             <div className="flex flex-wrap gap-2">
               {PERIODE_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
                   type="button"
                   onClick={() => setPeriode(opt.value)}
-                  className={`text-xs font-bold py-2 px-4 rounded-full transition-all duration-200 ${
+                  className={`text-xs font-bold py-2 px-4 rounded-full transition-all duration-200 flex items-center gap-1 ${
                     periode === opt.value
                       ? 'bg-[#1A3022] text-white shadow-md scale-105'
                       : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700'
                   }`}
                 >
-                  {opt.icon} {opt.label}
+                  <opt.Icon size={12} /> {opt.label}
                 </button>
               ))}
             </div>
@@ -142,12 +149,12 @@ const Leaderboard = () => {
         {/* Active Filters Summary */}
         <div className="mt-4 pt-4 border-t border-gray-50 flex items-center gap-2 text-[10px] text-gray-400">
           <span className="font-bold uppercase tracking-wider">Filter aktif:</span>
-          <span className="bg-[#E9F5EF] text-[#2D6A4F] font-bold px-3 py-1 rounded-full">
-            {activeWilayah?.icon} {activeWilayah?.label}
+          <span className="bg-[#E9F5EF] text-[#2D6A4F] font-bold px-3 py-1 rounded-full flex items-center gap-1">
+            {activeWilayah?.Icon && <activeWilayah.Icon size={10} />} {activeWilayah?.label}
           </span>
           <span className="text-gray-300">•</span>
-          <span className="bg-[#FFF9E7] text-[#D99A29] font-bold px-3 py-1 rounded-full">
-            {activePeriode?.icon} {activePeriode?.label}
+          <span className="bg-[#FFF9E7] text-[#D99A29] font-bold px-3 py-1 rounded-full flex items-center gap-1">
+            {activePeriode?.Icon && <activePeriode.Icon size={10} />} {activePeriode?.label}
           </span>
         </div>
       </div>

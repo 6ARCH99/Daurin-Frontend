@@ -5,6 +5,8 @@ import { api } from '../services/api.js';
 import ApiStatusBanner from '../components/ApiStatusBanner.jsx';
 import Reveal from '../components/motion/Reveal.jsx';
 import RevealGrid from '../components/motion/RevealGrid.jsx';
+import Icon from '../components/Icon.jsx';
+import { Hand, Target, Package } from 'lucide-react';
 
 const formatNumber = (n) => (n != null ? Number(n).toLocaleString('id-ID') : '—');
 
@@ -39,7 +41,11 @@ const Home = ({ user }) => {
   }, []);
 
   useEffect(() => {
-    loadDashboard();
+    // Use a microtask to avoid synchronous setState during render
+    const timer = setTimeout(() => {
+      loadDashboard();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [loadDashboard, user?.id]);
 
   const points = dashboard?.points;
@@ -63,8 +69,8 @@ const Home = ({ user }) => {
       <div className="app-page-inner max-w-6xl">
         <main>
           <Reveal className="app-page-header">
-            <h1 className="type-page-title mb-2">
-              Selamat Datang, {userName}! 👋
+            <h1 className="type-page-title mb-2 flex items-center gap-2">
+              Selamat Datang, {userName}! <Hand size={24} className="text-[#D99A29]" />
             </h1>
             <p className="type-page-subtitle">
               Terus semangat jaga lingkungan. Kamu sudah berkontribusi banyak!
@@ -97,7 +103,7 @@ const Home = ({ user }) => {
                 <StatsCard
                   title="Total Poin"
                   value={formatNumber(points?.total)}
-                  icon="🏆"
+                  icon="trophy"
                   sub={`${points?.progressPercent ?? 0}% menuju level ${points?.nextLevel ?? '—'}`}
                   progress={points?.progressPercent ?? 0}
                   color="bg-white"
@@ -105,15 +111,15 @@ const Home = ({ user }) => {
                 <StatsCard
                   title="CO₂ Diselamatkan"
                   value={`${co2?.totalSavedKg ?? 0} kg`}
-                  icon="🌍"
-                  sub={`+${co2?.weeklyDeltaKg ?? 0} kg minggu ini 🎉`}
+                  icon="globe"
+                  sub={`+${co2?.weeklyDeltaKg ?? 0} kg minggu ini`}
                   trend
                   color="bg-white"
                 />
                 <StatsCard
                   title="Total Setor"
                   value={`${deposits?.totalCount ?? 0} kali`}
-                  icon="📦"
+                  icon="package"
                   sub={`Sejak ${memberSince}`}
                   color="bg-white"
                 />
@@ -121,9 +127,9 @@ const Home = ({ user }) => {
             )}
             {!loading && !dashboard && (
               <>
-                <StatsCard title="Total Poin" value="—" icon="🏆" sub="Data tidak tersedia" color="bg-white" />
-                <StatsCard title="CO₂ Diselamatkan" value="—" icon="🌍" sub="Data tidak tersedia" color="bg-white" />
-                <StatsCard title="Total Setor" value="—" icon="📦" sub="Data tidak tersedia" color="bg-white" />
+                <StatsCard title="Total Poin" value="—" icon="trophy" sub="Data tidak tersedia" color="bg-white" />
+                <StatsCard title="CO₂ Diselamatkan" value="—" icon="globe" sub="Data tidak tersedia" color="bg-white" />
+                <StatsCard title="Total Setor" value="—" icon="package" sub="Data tidak tersedia" color="bg-white" />
               </>
             )}
           </RevealGrid>
@@ -181,9 +187,15 @@ const Home = ({ user }) => {
               <div className="space-y-4">
                 <div
                   onClick={() => navigate('/drop-point')}
-                  className="bg-white/10 p-5 rounded-2xl flex items-center gap-4 cursor-pointer hover:bg-white/20 border border-white/5 transition-all active:scale-95"
+                  onKeyDown={(e) => e.key === 'Enter' && navigate('/drop-point')}
+                  tabIndex={0}
+                  role="button"
+                  aria-label="Cari Drop Point terdekat"
+                  className="bg-white/10 p-5 rounded-2xl flex items-center gap-4 cursor-pointer hover:bg-white/20 border border-white/5 transition-all active:scale-95 min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                 >
-                  <span className="text-2xl">📍</span>
+                  <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+                    <Icon name="mapPin" size={22} className="text-white" ariaHidden={true} />
+                  </div>
                   <div className="text-left">
                     <p className="type-ui-sm text-white">Cari Drop Point</p>
                     <p className="type-caption text-white/60">Terdekat dari lokasimu</p>
@@ -191,9 +203,15 @@ const Home = ({ user }) => {
                 </div>
                 <div
                   onClick={() => navigate('/penjemputan')}
-                  className="bg-white/10 p-5 rounded-2xl flex items-center gap-4 cursor-pointer hover:bg-white/20 border border-white/5 transition-all active:scale-95"
+                  onKeyDown={(e) => e.key === 'Enter' && navigate('/penjemputan')}
+                  tabIndex={0}
+                  role="button"
+                  aria-label="Jadwalkan Penjemputan"
+                  className="bg-white/10 p-5 rounded-2xl flex items-center gap-4 cursor-pointer hover:bg-white/20 border border-white/5 transition-all active:scale-95 min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                 >
-                  <span className="text-2xl">📅</span>
+                  <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+                    <Icon name="calendar" size={22} className="text-white" ariaHidden={true} />
+                  </div>
                   <div className="text-left">
                     <p className="type-ui-sm text-white">Jadwalkan Penjemputan</p>
                     <p className="type-caption text-white/60">Gratis langsung ke rumah</p>
@@ -201,9 +219,15 @@ const Home = ({ user }) => {
                 </div>
                 <div
                   onClick={() => navigate('/reward')}
-                  className="bg-[#D99A29] p-5 rounded-2xl flex items-center gap-4 cursor-pointer text-[#1A3022] transition-all hover:scale-[1.03] active:scale-95 shadow-lg"
+                  onKeyDown={(e) => e.key === 'Enter' && navigate('/reward')}
+                  tabIndex={0}
+                  role="button"
+                  aria-label="Tukar Poin"
+                  className="bg-[#D99A29] p-5 rounded-2xl flex items-center gap-4 cursor-pointer text-[#1A3022] transition-all hover:scale-[1.03] active:scale-95 shadow-lg min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D99A29]/50"
                 >
-                  <span className="text-2xl">💰</span>
+                  <div className="w-10 h-10 rounded-xl bg-[#1A3022]/10 flex items-center justify-center flex-shrink-0">
+                    <Icon name="gift" size={22} className="text-[#1A3022]" ariaHidden={true} />
+                  </div>
                   <div className="text-left">
                     <p className="type-ui-sm text-[#1A3022]">Tukar Poin</p>
                     <p className="type-caption-bold text-[#1A3022]/80">Ke GoPay, OVO, Dana</p>
@@ -257,7 +281,12 @@ const Home = ({ user }) => {
                   <p className="text-sm text-gray-400">Belum ada aktivitas.</p>
                 )}
                 {activities.map((act) => {
-                  const icon = act.type === 'deposit' ? '📦' : act.type === 'redemption' ? '💰' : '🚚';
+                  const getActivityIcon = () => {
+                    if (act.type === 'deposit') return { name: 'package', color: 'text-[#2D4A37]' };
+                    if (act.type === 'redemption') return { name: 'gift', color: 'text-[#D99A29]' };
+                    return { name: 'truck', color: 'text-[#2D6A4F]' };
+                  };
+                  const iconConfig = getActivityIcon();
                   const minus = act.pointsDelta < 0;
                   return (
                     <div
@@ -266,7 +295,7 @@ const Home = ({ user }) => {
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-[#F5F5F0] rounded-xl flex items-center justify-center text-lg">
-                          {icon}
+                          <Icon name={iconConfig.name} size={18} className={iconConfig.color} ariaHidden={true} />
                         </div>
                         <div>
                           <p className="type-ui-sm text-[#1A3022]">{act.title}</p>

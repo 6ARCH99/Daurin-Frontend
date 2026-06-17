@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { api } from '../services/api';
+import { Trash2, CalendarDays, MapPin, Scale, Lightbulb } from 'lucide-react';
 
 const STATUS_LABEL = {
   scheduled: 'Terjadwal',
@@ -145,13 +146,13 @@ const PenjemputanPage = () => {
                         className="text-red-400 hover:text-red-600"
                         aria-label="Batalkan"
                       >
-                        🗑️
+                        <Trash2 size={18} />
                       </button>
                     )}
                   </div>
                   <div className="space-y-3 mb-6">
                     <div className="flex items-center gap-3">
-                      <span>📅</span>
+                      <CalendarDays size={18} className="text-gray-400" />
                       <div>
                         <p className="text-[10px] text-gray-400 font-bold uppercase">Tanggal & Waktu</p>
                         <p className="text-sm font-bold text-[#1A3022]">
@@ -160,14 +161,14 @@ const PenjemputanPage = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span>📍</span>
+                      <MapPin size={18} className="text-gray-400" />
                       <div>
                         <p className="text-[10px] text-gray-400 font-bold uppercase">Lokasi</p>
                         <p className="text-sm text-gray-600">{item.address}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span>⚖️</span>
+                      <Scale size={18} className="text-gray-400" />
                       <div>
                         <p className="text-[10px] text-gray-400 font-bold uppercase">Estimasi</p>
                         <p className="text-sm font-bold text-[#1A3022]">{item.estimatedWeightKg} kg</p>
@@ -191,7 +192,7 @@ const PenjemputanPage = () => {
 
         <div className="bg-[#E9F5EF] border border-[#CDE5D9] rounded-[24px] p-8">
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-2xl">💡</span>
+            <Lightbulb size={24} className="text-[#2D4A37]" />
             <h3 className="font-bold text-[#2D4A37]">Tips Penjemputan Lancar</h3>
           </div>
           <ul className="space-y-3 text-sm text-[#2D4A37] opacity-80 list-disc list-inside ml-2">

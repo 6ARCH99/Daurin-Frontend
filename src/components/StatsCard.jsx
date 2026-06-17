@@ -1,9 +1,11 @@
+import Icon from './Icon.jsx';
+
 const StatsCard = ({ title, value, icon, sub, progress, trend }) => (
   <div className="bg-white p-7 rounded-3xl shadow-sm border border-gray-50 card-interactive">
     <div className="flex justify-between items-start mb-5">
       <span className="type-label">{title}</span>
       <span className="text-2xl leading-none" aria-hidden>
-        {icon}
+        <Icon name={icon} size={28} className="text-[#68A67D]" />
       </span>
     </div>
     <div className="type-stat-value mb-3 min-h-[2.5rem] animate-stat">{value ?? '—'}</div>

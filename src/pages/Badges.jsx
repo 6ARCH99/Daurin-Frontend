@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '../services/api.js';
 import ApiStatusBanner from '../components/ApiStatusBanner.jsx';
+import Reveal from '../components/motion/Reveal.jsx';
+import RevealGrid from '../components/motion/RevealGrid.jsx';
+import { Medal, Sparkles, Lock, BarChart3, Lightbulb } from 'lucide-react';
 
 // DUMMY_LOCKED_BADGES removed - now using real API data only
 // If API returns no locked badges, empty state will be shown
@@ -53,7 +56,7 @@ const Badges = () => {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold flex items-center gap-2 font-heading">
-          Badges <span className="text-2xl">🎖️</span>
+          Badges <Medal className="w-8 h-8 text-[#D99A29]" />
         </h1>
         <p className="text-gray-500 text-sm mt-1">Kumpulkan badge dan tunjukkan pencapaianmu!</p>
         <ApiStatusBanner error={error} loading={loading} />
@@ -69,7 +72,7 @@ const Badges = () => {
       </div>
 
       {/* Progress Card */}
-      <div className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-10 flex justify-between items-center">
+      <Reveal className="bg-white rounded-[24px] p-6 shadow-sm border border-gray-100 mb-10 flex justify-between items-center card-interactive hover-lift transition-all duration-300">
         <div className="flex-1">
           <h3 className="font-bold text-[#1A3022] text-sm">Koleksi Badge</h3>
           <p className="text-[10px] text-gray-400">Terus kumpulkan badge dan raih pencapaian!</p>
@@ -85,19 +88,19 @@ const Badges = () => {
             {progress ? `${progress.percent}% complete` : '—'}
           </p>
         </div>
-      </div>
+      </Reveal>
 
       {/* Badge Terkumpul Section */}
-      <section className="mb-12">
+      <Reveal className="mb-12">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg font-bold font-heading flex items-center gap-2">
-            Badge Terkumpul <span className="text-sm">✨</span>
+            Badge Terkumpul <Sparkles className="w-4 h-4 text-[#D99A29]" />
           </h2>
           <span className="text-[10px] font-bold px-3 py-1 bg-green-100 text-green-700 rounded-full">
             {progress ? `${progress.earnedCount} Badges` : '—'}
           </span>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <RevealGrid className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {loading && earned.length === 0 && (
             <>
               {[1, 2, 3, 4].map((i) => (
@@ -124,20 +127,20 @@ const Badges = () => {
               </p>
             </div>
           ))}
-        </div>
-      </section>
+        </RevealGrid>
+      </Reveal>
 
       {/* Badge Terkunci Section */}
-      <section className="mb-12">
+      <Reveal className="mb-12">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg font-bold font-heading flex items-center gap-2">
-            Badge Terkunci <span className="text-sm">🔒</span>
+            Badge Terkunci <Lock className="w-4 h-4 text-gray-400" />
           </h2>
           <span className="text-[10px] font-bold text-gray-400">
             {progress ? `${progress.totalCount - progress.earnedCount} Remaining` : '—'}
           </span>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <RevealGrid className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {loading && locked.length === 0 && (
             <>
               {[1, 2, 3, 4].map((i) => (
@@ -177,11 +180,11 @@ const Badges = () => {
               )}
             </div>
           ))}
-        </div>
-      </section>
+        </RevealGrid>
+      </Reveal>
 
       {/* Tips Section */}
-      <div className="bg-[#E6F4EA]/40 rounded-[24px] p-8 border border-green-100">
+      <Reveal className="bg-[#E6F4EA]/40 rounded-[24px] p-8 border border-green-100">
         <h4 className="font-bold text-[#1A3022] mb-4 flex items-center gap-2">
           <span className="text-lg">💡</span> Tips Mendapatkan Badge
         </h4>
@@ -197,7 +200,7 @@ const Badges = () => {
             </li>
           ))}
         </ul>
-      </div>
+      </Reveal>
     </div>
   );
 };

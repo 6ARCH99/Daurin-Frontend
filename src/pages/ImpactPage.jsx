@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { api } from '../services/api.js';
 import ApiStatusBanner from '../components/ApiStatusBanner.jsx';
 import ContributionLineChart from '../components/ContributionLineChart.jsx';
+import { TreePine, Droplets, Zap, Globe, Users, Share2 } from 'lucide-react';
 
 // Share buttons component
 const ShareButtons = ({ impact }) => {
@@ -57,11 +58,24 @@ const ImpactPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
-    api.getClimateImpact()
-      .then((res) => setData(res.data))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+    let mounted = true;
+    const load = async () => {
+      if (!mounted) return;
+      setLoading(true);
+      try {
+        const res = await api.getClimateImpact();
+        if (!mounted) return;
+        setData(res.data);
+        setError('');
+      } catch (err) {
+        if (!mounted) return;
+        setError(err.message);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
   }, []);
 
   const impact = data?.impactMetrics;
@@ -100,21 +114,21 @@ const ImpactPage = () => {
           value: `${impact.treesEquivalent} pohon`,
           label: 'Setara Menanam',
           sub: 'CO₂ yang diserap',
-          icon: '🌲',
+          Icon: TreePine,
           iconBg: 'bg-[#E9F5EF]',
         },
         {
           value: `${impact.waterSavedLiters} Liter`,
           label: 'Air Dihemat',
           sub: 'Dari proses daur ulang',
-          icon: '💧',
+          Icon: Droplets,
           iconBg: 'bg-[#E9F5EF]',
         },
         {
           value: `${impact.energySavedKwh} kWh`,
           label: 'Energi Dihemat',
           sub: 'Listrik yang tidak terpakai',
-          icon: '⚡',
+          Icon: Zap,
           iconBg: 'bg-[#FFF4E0]',
         },
       ]
@@ -128,7 +142,7 @@ const ImpactPage = () => {
         {/* Header */}
         <header className="mb-10">
           <h1 className="type-page-title mb-2 flex items-center gap-2">
-            Dampak Iklimmu <span aria-hidden>🌍</span>
+            Dampak Iklimmu <Globe className="w-8 h-8 text-[#2D6A4F]" />
           </h1>
           <p className="text-gray-500 text-sm md:text-base">
             Lihat kontribusi nyata kamu terhadap lingkungan
@@ -156,9 +170,9 @@ const ImpactPage = () => {
               className="bg-white rounded-[32px] p-10 text-center shadow-sm border border-gray-100"
             >
               <div
-                className={`w-[72px] h-[72px] ${m.iconBg} rounded-full flex items-center justify-center mx-auto mb-8 text-3xl`}
+                className={`w-[72px] h-[72px] ${m.iconBg} rounded-full flex items-center justify-center mx-auto mb-8`}
               >
-                {m.icon}
+                {m.Icon && <m.Icon size={32} className="text-[#2D6A4F]" />}
               </div>
               <p className="text-3xl md:text-4xl font-bold text-[#1A3022] mb-2 leading-none">
                 {m.value}
@@ -198,8 +212,8 @@ const ImpactPage = () => {
           {/* Perbandingan Pengguna */}
           <article className="bg-white rounded-[32px] p-8 shadow-sm border border-gray-100">
             <div className="flex items-center gap-3 mb-8">
-              <div className="w-11 h-11 bg-[#F5F5F0] rounded-xl flex items-center justify-center text-xl">
-                👥
+              <div className="w-11 h-11 bg-[#F5F5F0] rounded-xl flex items-center justify-center">
+                <Users size={24} className="text-[#2D6A4F]" />
               </div>
               <div>
                 <h3 className="font-bold text-lg text-[#1A3022] font-heading">
@@ -259,8 +273,8 @@ const ImpactPage = () => {
           {/* Bagikan Pencapaian */}
           <article className="bg-white rounded-[32px] p-8 shadow-sm border border-gray-100 flex flex-col">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-11 h-11 bg-[#E9F5EF] rounded-xl flex items-center justify-center text-xl">
-                📤
+              <div className="w-11 h-11 bg-[#E9F5EF] rounded-xl flex items-center justify-center">
+                <Share2 size={24} className="text-[#2D6A4F]" />
               </div>
               <div>
                 <h3 className="font-bold text-lg text-[#1A3022] font-heading">

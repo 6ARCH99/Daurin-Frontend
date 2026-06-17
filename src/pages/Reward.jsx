@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Reveal from '../components/motion/Reveal.jsx';
-import { Gift, LineChart, Users, Lightbulb } from 'lucide-react';
+import { Gift, LineChart, Users, Lightbulb, PartyPopper } from 'lucide-react';
 import RewardCard from '../components/RewardCard';
 import RewardPlatformPicker from '../components/reward/RewardPlatformPicker';
 import RewardEwalletForm from '../components/reward/RewardEwalletForm';
@@ -291,8 +291,8 @@ const Reward = () => {
 
             {activeTab === 'referral' && (
               <div>
-                <h2 className="font-display text-2xl font-semibold text-[#1A3022] tracking-tight mb-2">
-                  Ajak Teman, Dapat Bonus! 🎁
+                <h2 className="font-display text-2xl font-semibold text-[#1A3022] tracking-tight mb-2 flex items-center gap-2">
+                  Ajak Teman, Dapat Bonus! <PartyPopper className="w-6 h-6 text-[#D99A29]" />
                 </h2>
                 <p className="font-sans text-sm font-normal text-gray-500 mb-8">
                   Setiap teman yang bergabung dan setor pertama kali, kalian berdua langsung dapat +100 poin.

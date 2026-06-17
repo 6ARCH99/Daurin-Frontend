@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../services/api.js';
+import { Lock, Bell, Scale, HelpCircle } from 'lucide-react';
 
 const SettingsPage = ({ 
   onLogout, 
@@ -30,7 +31,7 @@ const SettingsPage = ({
       id: 'password',
       title: 'Ubah Password',
       desc: 'Kelola keamanan akun',
-      icon: '🔒',
+      Icon: Lock,
       bgColor: 'bg-green-50',
       onClick: onChangePassword 
     },
@@ -38,7 +39,7 @@ const SettingsPage = ({
       id: 'notification',
       title: 'Notifikasi',
       desc: 'Atur preferensi pemberitahuan',
-      icon: '🔔',
+      Icon: Bell,
       bgColor: 'bg-orange-50',
       onClick: onGoToNotification 
     },
@@ -46,7 +47,7 @@ const SettingsPage = ({
       id: 'preference',
       title: 'Preferensi',
       desc: 'Sesuaikan pengalaman Anda',
-      icon: '⚖️',
+      Icon: Scale,
       bgColor: 'bg-blue-50',
       onClick: onGoToPreference 
     },
@@ -54,7 +55,7 @@ const SettingsPage = ({
       id: 'help',
       title: 'Bantuan',
       desc: 'FAQ dan dukungan',
-      icon: '❓',
+      Icon: HelpCircle,
       bgColor: 'bg-purple-50',
       onClick: onGoToHelp 
     }
@@ -78,8 +79,8 @@ const SettingsPage = ({
               className="bg-white p-6 rounded-[28px] border border-gray-100 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md hover:border-green-100 transition-all group text-left w-full active:scale-[0.99]"
             >
               <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 ${menu.bgColor} rounded-2xl flex items-center justify-center text-xl`}>
-                  {menu.icon}
+                <div className={`w-12 h-12 ${menu.bgColor} rounded-2xl flex items-center justify-center`}>
+                  <menu.Icon size={24} className="text-[#1A3022]" />
                 </div>
                 <div>
                   <h3 className="font-bold text-[#1A3022] text-sm group-hover:text-green-700 transition-colors">

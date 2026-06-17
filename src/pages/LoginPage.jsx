@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import LogoDaurin from '../assets/Logo Daurin.jpeg';
 import { api, setAuth } from '../services/api.js';
+import Icon from '../components/Icon.jsx';
 
 const LoginPage = ({ onBack, onLoginSuccess, onGoToRegister }) => {
   const [email, setEmail] = useState('');
@@ -83,32 +84,6 @@ const LoginPage = ({ onBack, onLoginSuccess, onGoToRegister }) => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    // Redirect to Google OAuth or open popup
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    if (!clientId) {
-      setSubmitError('Google login belum dikonfigurasi');
-      return;
-    }
-    const redirectUri = `${window.location.origin}/oauth/callback/google`;
-    const scope = 'openid email profile';
-    const state = btoa(JSON.stringify({ action: 'login', nonce: Date.now() }));
-    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token id_token&scope=${encodeURIComponent(scope)}&state=${encodeURIComponent(state)}&nonce=${Date.now()}`;
-    window.location.href = url;
-  };
-
-  const handleFacebookLogin = () => {
-    const appId = import.meta.env.VITE_FACEBOOK_APP_ID;
-    if (!appId) {
-      setSubmitError('Facebook login belum dikonfigurasi');
-      return;
-    }
-    const redirectUri = `${window.location.origin}/oauth/callback/facebook`;
-    const state = btoa(JSON.stringify({ action: 'login', nonce: Date.now() }));
-    const url = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${encodeURIComponent(state)}&scope=email,public_profile`;
-    window.location.href = url;
-  };
-
   return (
     <div className="min-h-screen bg-[#F5F5F0] font-sans text-left">
       <nav className="animate-nav flex justify-between items-center px-10 py-6 bg-white/50 backdrop-blur-sm">
@@ -160,62 +135,64 @@ const LoginPage = ({ onBack, onLoginSuccess, onGoToRegister }) => {
               </p>
 
               <div className="text-left">
-                <label className="text-[10px] font-bold text-[#1A3022] uppercase tracking-widest block mb-2">Email</label>
+                <label htmlFor="email" className="text-[10px] font-bold text-[#1A3022] uppercase tracking-widest block mb-2">Email</label>
                 <div className={`flex items-center gap-3 bg-[#F5F5F0] px-4 py-3.5 rounded-xl border transition-all ${errors.email ? 'border-red-500 bg-red-50' : 'border-transparent focus-within:border-[#2D6A4F]'}`}>
-                  <span className="text-gray-400">✉</span>
+                  <Icon name="mail" size={18} className="text-gray-400 flex-shrink-0" ariaHidden={true} />
                   <input
-                    type="text"
+                    id="email"
+                    type="email"
+                    autoComplete="email"
                     placeholder="nama@email.com"
-                    className="bg-transparent w-full outline-none text-sm text-[#1A3022]"
+                    className="bg-transparent w-full outline-none text-sm text-[#1A3022] min-h-[44px]"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
-                {errors.email && <p className="text-red-500 text-[10px] mt-1 font-bold italic">{errors.email}</p>}
+                {errors.email && <p className="text-red-500 text-[10px] mt-1 font-bold italic" role="alert">{errors.email}</p>}
               </div>
 
               <div className="text-left">
-                <label className="text-[10px] font-bold text-[#1A3022] uppercase tracking-widest block mb-2">Password</label>
+                <label htmlFor="password" className="text-[10px] font-bold text-[#1A3022] uppercase tracking-widest block mb-2">Password</label>
                 <div className={`flex items-center gap-3 bg-[#F5F5F0] px-4 py-3.5 rounded-xl border transition-all ${errors.password ? 'border-red-500 bg-red-50' : 'border-transparent focus-within:border-[#2D6A4F]'}`}>
-                  <span className="text-gray-400">🔒</span>
+                  <Icon name="lock" size={18} className="text-gray-400 flex-shrink-0" ariaHidden={true} />
                   <input
+                    id="password"
                     type="password"
+                    autoComplete="current-password"
                     placeholder="••••••••"
-                    className="bg-transparent w-full outline-none text-sm text-[#1A3022]"
+                    className="bg-transparent w-full outline-none text-sm text-[#1A3022] min-h-[44px]"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
-                {errors.password && <p className="text-red-500 text-[10px] mt-1 font-bold italic">{errors.password}</p>}
+                {errors.password && <p className="text-red-500 text-[10px] mt-1 font-bold italic" role="alert">{errors.password}</p>}
                 <div className="text-right mt-2">
-                  <button type="button" onClick={() => setShowForgotModal(true)} className="text-[10px] font-bold text-gray-400 uppercase hover:text-[#2D6A4F]">Lupa password?</button>
+                  <button 
+                    type="button" 
+                    onClick={() => setShowForgotModal(true)} 
+                    className="text-[10px] font-bold text-gray-400 uppercase hover:text-[#2D6A4F] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 rounded px-2 py-1"
+                  >
+                    Lupa password?
+                  </button>
                 </div>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#1A3022] text-white py-4 rounded-xl font-bold text-sm shadow-lg hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-60"
+                aria-busy={loading}
+                className="w-full min-h-[48px] bg-[#1A3022] text-white py-4 rounded-xl font-bold text-sm shadow-lg hover:opacity-90 transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2 flex items-center justify-center gap-2"
               >
-                {loading ? "Memproses..." : "Masuk"}
+                {loading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden="true" />
+                    Memproses...
+                  </>
+                ) : (
+                  'Masuk'
+                )}
               </button>
             </form>
-
-            <div className="relative my-8 text-center">
-              <hr className="border-gray-100" />
-              <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-4 text-[10px] text-gray-400 font-bold uppercase">Atau</span>
-            </div>
-
-            <div className="space-y-3">
-              <button type="button" onClick={handleGoogleLogin} className="w-full flex items-center justify-center gap-3 border border-gray-200 py-3 rounded-xl hover:bg-gray-50 transition-all text-sm font-bold text-gray-600">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
-                Masuk dengan Google
-              </button>
-              <button type="button" onClick={handleFacebookLogin} className="w-full flex items-center justify-center gap-3 bg-[#1877F2] text-white py-3 rounded-xl hover:opacity-90 transition-all text-sm font-bold">
-                <span className="bg-white text-[#1877F2] rounded-full w-5 h-5 flex items-center justify-center text-[10px]">f</span>
-                Masuk dengan Facebook
-              </button>
-            </div>
 
             <div className="mt-8 text-center">
               <p className="text-xs text-gray-400">

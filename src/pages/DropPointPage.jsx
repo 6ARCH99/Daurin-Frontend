@@ -5,12 +5,18 @@ import { api } from '../services/api';
 // Simple Interactive Map Component using OpenStreetMap tiles
 const InteractiveMap = ({ dropPoints, userLocation, onMarkerClick, selectedPoint, onMapReady }) => {
   const mapRef = useRef(null);
-  const [mapInstance, setMapInstance] = useState(null);
+  const mapInstanceRef = useRef(null);
+  const LRef = useRef(null);
+  const markersRef = useRef([]);
   const [mapError, setMapError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const markersRef = useRef([]);
+  const isInitializedRef = useRef(false);
 
+  // Initialize map only once
   useEffect(() => {
+    if (isInitializedRef.current) return;
+    isInitializedRef.current = true;
+    
     let mounted = true;
     
     const initMap = async () => {
@@ -22,8 +28,8 @@ const InteractiveMap = ({ dropPoints, userLocation, onMarkerClick, selectedPoint
         try {
           const leaflet = await import('leaflet');
           L = leaflet.default || leaflet;
-        } catch (e) {
-          console.warn('Leaflet not available, using fallback');
+        } catch (importErr) {
+          console.warn('Leaflet not available, using fallback', importErr);
           if (mounted) {
             setMapError('Peta tidak tersedia saat ini');
             setIsLoading(false);
@@ -35,16 +41,9 @@ const InteractiveMap = ({ dropPoints, userLocation, onMarkerClick, selectedPoint
 
         // Calculate center
         let center = [-6.2088, 106.8456]; // Default Jakarta
-        if (selectedPoint?.lat && selectedPoint?.lng) {
-          center = [selectedPoint.lat, selectedPoint.lng];
-        } else if (userLocation?.lat && userLocation?.lng) {
-          center = [userLocation.lat, userLocation.lng];
-        } else if (dropPoints?.length > 0 && dropPoints[0].lat) {
-          center = [dropPoints[0].lat, dropPoints[0].lng];
-        }
 
         // Create map
-        const map = L.map(mapRef.current).setView(center, selectedPoint ? 16 : 13);
+        const map = L.map(mapRef.current).setView(center, 13);
 
         // Add tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -52,46 +51,9 @@ const InteractiveMap = ({ dropPoints, userLocation, onMarkerClick, selectedPoint
           maxZoom: 19,
         }).addTo(map);
 
-        // Add user location marker
-        if (userLocation?.lat && userLocation?.lng) {
-          const userIcon = L.divIcon({
-            className: 'custom-user-marker',
-            html: `<div style="background-color: #1A3022; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>`,
-            iconSize: [16, 16],
-            iconAnchor: [8, 8],
-          });
-          L.marker([userLocation.lat, userLocation.lng], { icon: userIcon }).addTo(map).bindPopup('Lokasi Anda');
-        }
-
-        // Add drop point markers
-        markersRef.current = [];
-        if (dropPoints && Array.isArray(dropPoints)) {
-          dropPoints.forEach((dp) => {
-            if (dp?.lat && dp?.lng) {
-              const isSelected = selectedPoint?.id === dp.id;
-              try {
-                const marker = L.marker([dp.lat, dp.lng], {
-                  icon: L.divIcon({
-                    className: 'custom-drop-marker',
-                    html: `<div style="background-color: ${isSelected ? '#EBA332' : '#68A67D'}; width: 24px; height: 24px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>`,
-                    iconSize: [24, 24],
-                    iconAnchor: [12, 24],
-                  })
-                })
-                  .addTo(map)
-                  .bindPopup(`<b>${dp.name || 'Drop Point'}</b><br/>${dp.address || ''}`);
-                
-                marker.on('click', () => onMarkerClick && onMarkerClick(dp));
-                markersRef.current.push({ marker, data: dp });
-              } catch (e) {
-                console.warn('Failed to add marker:', e);
-              }
-            }
-          });
-        }
-
         if (mounted) {
-          setMapInstance({ map, L });
+          mapInstanceRef.current = map;
+          LRef.current = L;
           setIsLoading(false);
           if (onMapReady) onMapReady(map);
         }
@@ -110,15 +72,95 @@ const InteractiveMap = ({ dropPoints, userLocation, onMarkerClick, selectedPoint
     return () => {
       mounted = false;
       clearTimeout(timer);
-      if (mapInstance?.map) {
+      if (mapInstanceRef.current) {
         try {
-          mapInstance.map.remove();
-        } catch (e) {
+          mapInstanceRef.current.remove();
+          mapInstanceRef.current = null;
+          LRef.current = null;
+        } catch {
           // Ignore cleanup errors
         }
       }
     };
-  }, []); // Only init once
+  }, []); // Only init once - prevent white screen from re-renders
+
+  // Effect to update markers and view when props change
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const L = LRef.current;
+    if (!map || !L) return;
+
+    // Update center if selected point or user location changed
+    let newCenter = null;
+    let newZoom = null;
+    
+    if (selectedPoint?.lat && selectedPoint?.lng) {
+      newCenter = [selectedPoint.lat, selectedPoint.lng];
+      newZoom = 16;
+    } else if (userLocation?.lat && userLocation?.lng) {
+      newCenter = [userLocation.lat, userLocation.lng];
+    } else if (dropPoints?.length > 0 && dropPoints[0]?.lat) {
+      newCenter = [dropPoints[0].lat, dropPoints[0].lng];
+    }
+    
+    if (newCenter) {
+      map.setView(newCenter, newZoom || map.getZoom());
+    }
+
+    // Clear existing markers
+    markersRef.current.forEach(({ marker }) => {
+      try {
+        map.removeLayer(marker);
+      } catch {
+        // Ignore
+      }
+    });
+    markersRef.current = [];
+
+    // Add user location marker
+    if (userLocation?.lat && userLocation?.lng) {
+      const userIcon = L.divIcon({
+        className: 'custom-user-marker',
+        html: `<div style="background-color: #1A3022; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>`,
+        iconSize: [16, 16],
+        iconAnchor: [8, 8],
+      });
+      try {
+        const userMarker = L.marker([userLocation.lat, userLocation.lng], { icon: userIcon })
+          .addTo(map)
+          .bindPopup('Lokasi Anda');
+        markersRef.current.push({ marker: userMarker, data: null });
+      } catch (e) {
+        console.warn('Failed to add user marker:', e);
+      }
+    }
+
+    // Add drop point markers
+    if (dropPoints && Array.isArray(dropPoints)) {
+      dropPoints.forEach((dp) => {
+        if (dp?.lat && dp?.lng) {
+          const isSelected = selectedPoint?.id === dp.id;
+          try {
+            const marker = L.marker([dp.lat, dp.lng], {
+              icon: L.divIcon({
+                className: 'custom-drop-marker',
+                html: `<div style="background-color: ${isSelected ? '#EBA332' : '#68A67D'}; width: 24px; height: 24px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>`,
+                iconSize: [24, 24],
+                iconAnchor: [12, 24],
+              })
+            })
+              .addTo(map)
+              .bindPopup(`<b>${dp.name || 'Drop Point'}</b><br/>${dp.address || ''}`);
+            
+            marker.on('click', () => onMarkerClick && onMarkerClick(dp));
+            markersRef.current.push({ marker, data: dp });
+          } catch (markerErr) {
+            console.warn('Failed to create marker:', markerErr);
+          }
+        }
+      });
+    }
+  }, [dropPoints, userLocation, selectedPoint, onMarkerClick]);
 
   if (mapError) {
     return (
@@ -161,11 +203,6 @@ const MATERIALS = [
   { id: 'electronic', label: 'Elektronik', api: 'elektronik' },
 ];
 
-function materialLabel(m) {
-  const map = { plastik: 'Plastik', kertas: 'Kertas', logam: 'Logam', kaca: 'Kaca', elektronik: 'Elektronik' };
-  return map[String(m).toLowerCase()] || m;
-}
-
 const DropPointPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('Semua');
@@ -197,7 +234,10 @@ const DropPointPage = () => {
   }, [searchTerm, activeFilter, coords]);
 
   useEffect(() => {
-    const t = setTimeout(fetchPoints, 300);
+    // Debounce the fetch to avoid rapid re-renders
+    const t = setTimeout(() => {
+      fetchPoints();
+    }, 300);
     return () => clearTimeout(t);
   }, [fetchPoints]);
 

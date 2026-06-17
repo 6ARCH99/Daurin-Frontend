@@ -1,22 +1,39 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import LogoDaurin from '../assets/Logo Daurin.jpeg';
 import Reveal from '../components/motion/Reveal.jsx';
 import RevealGrid from '../components/motion/RevealGrid.jsx';
+import { easingCurves } from '../components/motion/FramerAnimations.jsx';
+import { Leaf, Wallet, Banknote, Zap, Truck, Gift, BarChart3, Trophy, MapPin, Calendar } from 'lucide-react';
 
-const FeatureCard = ({ icon, title, desc }) => (
-  <div className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm flex flex-col items-start gap-4 card-interactive group">
-    <div className="w-12 h-12 bg-[#E7F7EF] rounded-2xl flex items-center justify-center text-xl icon-pop">
-      {icon}
-    </div>
+const FeatureCard = ({ icon: IconComponent, title, desc }) => (
+  <motion.div
+    className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm flex flex-col items-start gap-4 group"
+    whileHover={{ y: -8, boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)' }}
+    transition={{ duration: 0.4, ease: 'easeOut' }}
+    style={{ willChange: 'transform, box-shadow' }}
+  >
+    <motion.div
+      className="w-12 h-12 bg-[#E7F7EF] rounded-2xl flex items-center justify-center text-xl"
+      whileHover={{ scale: 1.15, rotate: -5 }}
+      transition={{ duration: 0.4 }}
+    >
+      {IconComponent && <IconComponent size={24} className="text-[#2D6A4F]" />}
+    </motion.div>
     <div>
       <h4 className="type-section-title text-[#1A3022] mb-2">{title}</h4>
       <p className="type-caption leading-relaxed">{desc}</p>
     </div>
-  </div>
+  </motion.div>
 );
 
 const StepCard = ({ number, tag, title, desc }) => (
-  <div className="bg-white p-10 rounded-[32px] shadow-sm relative overflow-hidden group card-interactive border border-gray-50">
+  <motion.div
+    className="bg-white p-10 rounded-[32px] shadow-sm relative overflow-hidden group card-interactive border border-gray-50"
+    whileHover={{ y: -8, boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)' }}
+    transition={{ duration: 0.4, ease: 'easeOut' }}
+    style={{ willChange: 'transform, box-shadow' }}
+  >
     <div className="relative z-10">
       <span className="text-[#2D6A4F] font-bold text-[10px] uppercase tracking-widest opacity-60 mb-4 block">
         {tag}
@@ -27,7 +44,7 @@ const StepCard = ({ number, tag, title, desc }) => (
     <span className="absolute bottom-[-10px] right-6 text-8xl font-bold text-[#E7F7EF] leading-none select-none group-hover:text-[#D5EDE0] transition-colors">
       {number}
     </span>
-  </div>
+  </motion.div>
 );
 
 const ReviewCard = ({ name, location, amount, text }) => (
@@ -36,7 +53,7 @@ const ReviewCard = ({ name, location, amount, text }) => (
       <div className="w-12 h-12 bg-[#A8D5BA] rounded-full" />
       <div>
         <h5 className="text-sm font-bold text-[#1A3022]">{name}, {location}</h5>
-        <p className="text-[#B2904C] text-[10px] font-bold">Rp {amount} 💰</p>
+        <p className="text-[#B2904C] text-[10px] font-bold flex items-center gap-1">Rp {amount} <Wallet size={12} /></p>
       </div>
     </div>
     <p className="text-gray-500 text-xs leading-relaxed italic font-medium">&ldquo;{text}&rdquo;</p>
@@ -145,7 +162,8 @@ const LandingPage = ({ onLogin, onGoToRegister }) => {
         <div className="hero-glow w-96 h-96 bg-[#2D6A4F]/40 bottom-0 right-[5%]" style={{ animationDelay: '2s' }} aria-hidden />
         <div className="max-w-4xl mx-auto relative z-10">
           <div className="hero-badge inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-8 border border-white/10">
-            <span className="text-[10px] font-bold tracking-widest uppercase">🍃 Aksi Iklim Dimulai Hari Ini</span>
+            <Leaf size={16} className="text-white" />
+            <span className="text-[10px] font-bold tracking-widest uppercase">Aksi Iklim Dimulai Hari Ini</span>
           </div>
           <h1 className="hero-title font-display text-5xl md:text-[4.5rem] font-bold mb-8 leading-[1.08] tracking-tight">
             Pilah Sampah, Dapat <br />
@@ -192,12 +210,12 @@ const LandingPage = ({ onLogin, onGoToRegister }) => {
             <h2 className="text-4xl md:text-5xl font-bold text-[#1A3022] mb-4">Fitur yang Bikin Bedanya</h2>
           </Reveal>
           <RevealGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <FeatureCard icon="💰" title="Reward E-Wallet" desc="Poin yang bisa ditukar ke GoPay, OVO, Dana, atau ShopeePay" />
-            <FeatureCard icon="📈" title="Lacak CO₂" desc="Lihat berapa kilogram CO₂ yang sudah kamu selamatkan secara real-time" />
-            <FeatureCard icon="📍" title="Drop Point" desc="Temukan titik pengumpulan sampah terdekat dengan peta interaktif" />
-            <FeatureCard icon="📅" title="Jadwal Fleksibel" desc="Atur jadwal penjemputan sampah langsung dari rumah Anda" />
-            <FeatureCard icon="🎁" title="Hadiah Mingguan" desc="Ikuti tantangan mingguan dan raih hadiah eksklusif" />
-            <FeatureCard icon="🌿" title="Komunitas" desc="Bergabung dengan ribuan pengguna lain yang peduli bumi" />
+            <FeatureCard icon={Wallet} title="Reward E-Wallet" desc="Poin yang bisa ditukar ke GoPay, OVO, Dana, atau ShopeePay" />
+            <FeatureCard icon={BarChart3} title="Lacak CO₂" desc="Lihat berapa kilogram CO₂ yang sudah kamu selamatkan secara real-time" />
+            <FeatureCard icon={MapPin} title="Drop Point" desc="Temukan titik pengumpulan sampah terdekat dengan peta interaktif" />
+            <FeatureCard icon={Calendar} title="Jadwal Fleksibel" desc="Atur jadwal penjemputan sampah langsung dari rumah Anda" />
+            <FeatureCard icon={Gift} title="Hadiah Mingguan" desc="Ikuti tantangan mingguan dan raih hadiah eksklusif" />
+            <FeatureCard icon={Leaf} title="Komunitas" desc="Bergabung dengan ribuan pengguna lain yang peduli bumi" />
           </RevealGrid>
         </div>
       </section>
@@ -209,12 +227,12 @@ const LandingPage = ({ onLogin, onGoToRegister }) => {
             <h2 className="font-display text-4xl md:text-6xl font-semibold text-[#1A3022] tracking-tight">Paling Untung, Paling Mudah</h2>
           </div>
           <RevealGrid className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <FeatureCard icon="💸" title="Rate Tertinggi" desc="Rp 10.000+/kg, 2x lebih tinggi dari bank sampah biasa" />
-            <FeatureCard icon="⚡" title="Cair Instan" desc="Pencairan ke e-wallet cuma 1 menit, bukan 3-7 hari" />
-            <FeatureCard icon="🚚" title="Jemput GRATIS" desc="Minimal 5kg langsung dijemput ke rumah tanpa biaya" />
-            <FeatureCard icon="🎁" title="Bonus Rutin" desc="Challenge mingguan dengan total hadiah Rp 5 juta/bulan" />
-            <FeatureCard icon="📊" title="Tracking Real-time" desc="Lihat dampak CO₂ kamu langsung di dashboard" />
-            <FeatureCard icon="🏆" title="Referral Bonus" desc="Ajak teman dapat Rp 50.000 per referral yang aktif" />
+            <FeatureCard icon={Banknote} title="Rate Tertinggi" desc="Rp 10.000+/kg, 2x lebih tinggi dari bank sampah biasa" />
+            <FeatureCard icon={Zap} title="Cair Instan" desc="Pencairan ke e-wallet cuma 1 menit, bukan 3-7 hari" />
+            <FeatureCard icon={Truck} title="Jemput GRATIS" desc="Minimal 5kg langsung dijemput ke rumah tanpa biaya" />
+            <FeatureCard icon={Gift} title="Bonus Rutin" desc="Challenge mingguan dengan total hadiah Rp 5 juta/bulan" />
+            <FeatureCard icon={BarChart3} title="Tracking Real-time" desc="Lihat dampak CO₂ kamu langsung di dashboard" />
+            <FeatureCard icon={Trophy} title="Referral Bonus" desc="Ajak teman dapat Rp 50.000 per referral yang aktif" />
           </RevealGrid>
         </Reveal>
       </section>

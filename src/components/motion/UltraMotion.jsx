@@ -1,5 +1,16 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+
+// ==========================================
+// EASING PRESETS
+// ==========================================
+export const easings = {
+  smooth: [0.22, 1, 0.36, 1],
+  bouncy: [0.68, -0.55, 0.265, 1.55],
+  snappy: [0.4, 0, 0.2, 1],
+  gentle: [0.25, 0.1, 0.25, 1],
+  dramatic: [0.87, 0, 0.13, 1],
+};
 
 // ==========================================
 // PAGE TRANSITIONS
@@ -12,25 +23,43 @@ export const PageTransition = ({ children, mode = 'slide' }) => {
       animate: { opacity: 1, x: 0, scale: 1 },
       exit: { opacity: 0, x: -100, scale: 0.95 }
     },
+    slideUp: {
+      initial: { opacity: 0, y: 60, scale: 0.98 },
+      animate: { opacity: 1, y: 0, scale: 1 },
+      exit: { opacity: 0, y: -40, scale: 0.98 }
+    },
     fade: {
       initial: { opacity: 0, scale: 0.9 },
       animate: { opacity: 1, scale: 1 },
-      exit: { opacity: 0, scale: 1.1 }
+      exit: { opacity: 0, scale: 1.05 }
     },
     blur: {
       initial: { opacity: 0, filter: 'blur(20px)', scale: 1.1 },
       animate: { opacity: 1, filter: 'blur(0px)', scale: 1 },
-      exit: { opacity: 0, filter: 'blur(20px)', scale: 0.9 }
+      exit: { opacity: 0, filter: 'blur(20px)', scale: 0.95 }
+    },
+    zoom: {
+      initial: { opacity: 0, scale: 0.5, rotate: -10 },
+      animate: { opacity: 1, scale: 1, rotate: 0 },
+      exit: { opacity: 0, scale: 1.2, rotate: 10 }
+    },
+    flip: {
+      initial: { opacity: 0, rotateY: 90 },
+      animate: { opacity: 1, rotateY: 0 },
+      exit: { opacity: 0, rotateY: -90 }
     }
   };
 
+  const selectedVariant = variants[mode] || variants.slide;
+
   return (
     <motion.div
-      variants={variants[mode]}
+      variants={selectedVariant}
       initial="initial"
       animate="animate"
       exit="exit"
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.5, ease: easings.smooth }}
+      style={{ willChange: 'transform, opacity' }}
     >
       {children}
     </motion.div>
@@ -46,35 +75,52 @@ export const ScrollReveal = ({
   direction = 'up', 
   delay = 0, 
   duration = 0.6,
-  className = '' 
+  distance = 60,
+  blur = true,
+  scale = null,
+  rotate = null,
+  className = '',
+  once = true,
+  threshold = 0.1
 }) => {
-  const directions = {
-    up: { y: 60, x: 0 },
-    down: { y: -60, x: 0 },
-    left: { x: 60, y: 0 },
-    right: { x: -60, y: 0 }
+  const getInitialPosition = () => {
+    switch (direction) {
+      case 'up': return { y: distance, x: 0 };
+      case 'down': return { y: -distance, x: 0 };
+      case 'left': return { x: distance, y: 0 };
+      case 'right': return { x: -distance, y: 0 };
+      default: return { y: distance, x: 0 };
+    }
   };
 
+  const initial = getInitialPosition();
+  
   return (
     <motion.div
       initial={{ 
         opacity: 0, 
-        ...directions[direction],
-        filter: 'blur(10px)'
+        x: initial.x,
+        y: initial.y,
+        scale: scale || 1,
+        rotate: rotate || 0,
+        filter: blur ? 'blur(10px)' : 'blur(0px)'
       }}
       whileInView={{ 
         opacity: 1, 
         x: 0, 
         y: 0,
+        scale: 1,
+        rotate: 0,
         filter: 'blur(0px)'
       }}
-      viewport={{ once: true, margin: "-50px" }}
+      viewport={{ once, margin: `-${Math.round(threshold * 100)}px` }}
       transition={{ 
         duration, 
-        delay, 
-        ease: [0.22, 1, 0.36, 1] 
+        delay: delay / 1000, 
+        ease: easings.smooth 
       }}
       className={className}
+      style={{ willChange: 'transform, opacity, filter' }}
     >
       {children}
     </motion.div>
@@ -87,19 +133,23 @@ export const ScrollReveal = ({
 
 export const StaggerContainer = ({ 
   children, 
-  staggerDelay = 0.1, 
-  className = '' 
+  staggerDelay = 0.08, 
+  className = '',
+  once = true,
+  threshold = 0.1
 }) => {
   return (
     <motion.div
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, margin: "-50px" }}
+      viewport={{ once, margin: `-${Math.round(threshold * 100)}px` }}
       variants={{
-        hidden: {},
+        hidden: { opacity: 0 },
         visible: {
+          opacity: 1,
           transition: {
-            staggerChildren: staggerDelay
+            staggerChildren: staggerDelay,
+            delayChildren: 0.1
           }
         }
       }}
@@ -113,23 +163,30 @@ export const StaggerContainer = ({
 export const StaggerItem = ({ 
   children, 
   direction = 'up',
+  distance = 40,
+  blur = true,
   className = '' 
 }) => {
-  const directions = {
-    up: { y: 40, x: 0 },
-    down: { y: -40, x: 0 },
-    left: { x: 40, y: 0 },
-    right: { x: -40, y: 0 },
-    scale: { scale: 0.8 }
+  const getDirectionOffset = () => {
+    switch (direction) {
+      case 'up': return { y: distance };
+      case 'down': return { y: -distance };
+      case 'left': return { x: distance };
+      case 'right': return { x: -distance };
+      case 'scale': return { scale: 0.85 };
+      default: return { y: distance };
+    }
   };
+
+  const offset = getDirectionOffset();
 
   return (
     <motion.div
       variants={{
         hidden: { 
           opacity: 0, 
-          ...directions[direction],
-          filter: 'blur(8px)'
+          ...offset,
+          filter: blur ? 'blur(8px)' : 'blur(0px)'
         },
         visible: { 
           opacity: 1, 
@@ -139,11 +196,12 @@ export const StaggerItem = ({
           filter: 'blur(0px)',
           transition: {
             duration: 0.5,
-            ease: [0.22, 1, 0.36, 1]
+            ease: easings.smooth
           }
         }
       }}
       className={className}
+      style={{ willChange: 'transform, opacity, filter' }}
     >
       {children}
     </motion.div>
@@ -156,15 +214,18 @@ export const StaggerItem = ({
 
 export const HoverScale = ({ 
   children, 
-  scale = 1.05, 
+  scale = 1.05,
+  hoverScale = 1.08,
   className = '' 
 }) => {
   return (
     <motion.div
-      whileHover={{ scale }}
-      whileTap={{ scale: 0.98 }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
+      initial={{ scale }}
+      whileHover={{ scale: hoverScale }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ duration: 0.2, ease: easings.smooth }}
       className={className}
+      style={{ willChange: 'transform' }}
     >
       {children}
     </motion.div>
@@ -173,13 +234,36 @@ export const HoverScale = ({
 
 export const HoverLift = ({ 
   children, 
-  y = -8, 
+  y = -10, 
+  shadow = true,
   className = '' 
 }) => {
   return (
     <motion.div
-      whileHover={{ y, boxShadow: "0 20px 40px -15px rgba(26, 48, 34, 0.2)" }}
-      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      whileHover={{ 
+        y, 
+        boxShadow: shadow ? "0 24px 48px -12px rgba(26, 48, 34, 0.2)" : undefined 
+      }}
+      transition={{ duration: 0.3, ease: easings.smooth }}
+      className={className}
+      style={{ willChange: 'transform, box-shadow' }}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+export const HoverGlow = ({
+  children,
+  color = 'rgba(104, 166, 125, 0.4)',
+  className = ''
+}) => {
+  return (
+    <motion.div
+      whileHover={{ 
+        boxShadow: `0 0 30px ${color}` 
+      }}
+      transition={{ duration: 0.3 }}
       className={className}
     >
       {children}
@@ -210,7 +294,10 @@ export const ParallaxContainer = ({
   return (
     <div 
       className={className}
-      style={{ transform: `translateY(${offset}px)` }}
+      style={{ 
+        transform: `translateY(${offset}px)`,
+        willChange: 'transform'
+      }}
     >
       {children}
     </div>
@@ -234,15 +321,15 @@ export const ModalOverlay = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.25 }}
           onClick={onClose}
           className={`fixed inset-0 bg-black/50 backdrop-blur-sm z-50 ${className}`}
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
+            initial={{ opacity: 0, scale: 0.9, y: 30, filter: 'blur(10px)' }}
+            animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.35, ease: easings.smooth }}
             onClick={(e) => e.stopPropagation()}
           >
             {children}
@@ -279,7 +366,7 @@ export const Toast = ({
           initial={{ opacity: 0, y: 50, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -20, scale: 0.9 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.4, ease: easings.smooth }}
           className={`fixed z-50 ${positions[position]} ${className}`}
         >
           {children}
@@ -293,27 +380,41 @@ export const Toast = ({
 // SPECIAL EFFECTS
 // ==========================================
 
-export const Confetti = ({ trigger }) => {
+export const Confetti = ({ trigger, count = 50 }) => {
   const [pieces, setPieces] = useState([]);
 
   useEffect(() => {
     if (trigger) {
-      const newPieces = Array.from({ length: 50 }, (_, i) => ({
+      const colors = ['#68A67D', '#EBA332', '#1A3022', '#D99A29', '#2D6A4F', '#FFB800'];
+      const newPieces = Array.from({ length: count }, (_, i) => ({
         id: i,
-        x: Math.random() * 100 - 50,
-        y: Math.random() * -100 - 50,
-        rotation: Math.random() * 360,
-        color: ['#68A67D', '#EBA332', '#1A3022', '#D99A29'][Math.floor(Math.random() * 4)],
-        size: Math.random() * 10 + 5
+        x: (Math.random() - 0.5) * 400,
+        y: -Math.random() * 300 - 100,
+        rotation: Math.random() * 720 - 360,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        size: Math.random() * 12 + 6,
+        shape: ['square', 'circle', 'triangle'][Math.floor(Math.random() * 3)]
       }));
       setPieces(newPieces);
 
       setTimeout(() => setPieces([]), 3000);
     }
-  }, [trigger]);
+  }, [trigger, count]);
+
+  const getShape = (shape, size) => {
+    switch (shape) {
+      case 'circle': return { borderRadius: '50%' };
+      case 'triangle': 
+        return { 
+          clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
+          borderRadius: 0 
+        };
+      default: return { borderRadius: '2px' };
+    }
+  };
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
       <AnimatePresence>
         {pieces.map((piece) => (
           <motion.div
@@ -323,26 +424,26 @@ export const Confetti = ({ trigger }) => {
               y: '50vh', 
               rotate: 0, 
               opacity: 1,
-              scale: 1
+              scale: 0.5
             }}
             animate={{ 
-              x: `calc(50vw + ${piece.x}vw)`, 
-              y: `calc(50vh + ${piece.y}vh)`, 
+              x: `calc(50vw + ${piece.x}px)`, 
+              y: `calc(50vh + ${piece.y}px)`, 
               rotate: piece.rotation,
               opacity: 0,
-              scale: 0.5
+              scale: Math.random() * 0.5 + 0.5
             }}
             exit={{ opacity: 0 }}
             transition={{ 
-              duration: 2, 
-              ease: [0.22, 1, 0.36, 1] 
+              duration: 2 + Math.random(), 
+              ease: easings.smooth
             }}
             style={{
               position: 'absolute',
               width: piece.size,
               height: piece.size,
               backgroundColor: piece.color,
-              borderRadius: '2px'
+              ...getShape(piece.shape, piece.size)
             }}
           />
         ))}
@@ -355,7 +456,7 @@ export const Confetti = ({ trigger }) => {
 // SPRING PHYSICS
 // ==========================================
 
-export const SpringBox = ({ children, className = '' }) => {
+export const SpringBox = ({ children, className = '', stiffness = 300, damping = 20 }) => {
   return (
     <motion.div
       drag
@@ -365,8 +466,8 @@ export const SpringBox = ({ children, className = '' }) => {
       whileTap={{ scale: 0.95 }}
       transition={{
         type: 'spring',
-        stiffness: 300,
-        damping: 20
+        stiffness,
+        damping
       }}
       className={className}
     >
@@ -412,35 +513,39 @@ export const MagneticButton = ({ children, className = '', strength = 0.3 }) => 
 // TEXT SCRAMBLE EFFECT
 // ==========================================
 
-export const TextScramble = ({ text, className = '' }) => {
+export const TextScramble = ({ text, className = '', duration = 1500 }) => {
   const [displayText, setDisplayText] = useState(text);
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
 
   useEffect(() => {
     let iteration = 0;
+    const totalIterations = text.length * 3;
+    const intervalTime = duration / totalIterations;
+    
     const interval = setInterval(() => {
       setDisplayText(
         text
           .split('')
           .map((char, index) => {
-            if (index < iteration) {
+            if (char === ' ') return ' ';
+            if (index < iteration / 3) {
               return text[index];
             }
-            if (char === ' ') return ' ';
             return chars[Math.floor(Math.random() * chars.length)];
           })
           .join('')
       );
 
-      if (iteration >= text.length) {
+      if (iteration >= totalIterations) {
         clearInterval(interval);
+        setDisplayText(text);
       }
 
-      iteration += 1 / 3;
-    }, 30);
+      iteration++;
+    }, intervalTime);
 
     return () => clearInterval(interval);
-  }, [text]);
+  }, [text, duration]);
 
   return <span className={className}>{displayText}</span>;
 };
@@ -485,7 +590,7 @@ export const CursorFollower = () => {
     };
 
     const handleMouseOver = (e) => {
-      if (e.target.closest('button, a, [role="button"]')) {
+      if (e.target.closest('button, a, [role="button"], input, textarea')) {
         setIsHovering(true);
       }
     };
@@ -505,14 +610,28 @@ export const CursorFollower = () => {
     };
   }, []);
 
+  // Only show on desktop
+  const [isMobile, setIsMobile] = useState(true);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  if (isMobile) return null;
+
   return (
     <>
       <motion.div
-        className="fixed w-4 h-4 bg-[#68A67D] rounded-full pointer-events-none z-[9999] mix-blend-difference"
+        className="fixed w-3 h-3 bg-[#68A67D] rounded-full pointer-events-none z-[9999] mix-blend-difference"
         animate={{
-          x: mousePosition.x - 8,
-          y: mousePosition.y - 8,
-          scale: isHovering ? 2 : 1
+          x: mousePosition.x - 6,
+          y: mousePosition.y - 6,
+          scale: isHovering ? 2.5 : 1
         }}
         transition={{
           type: 'spring',
@@ -522,11 +641,11 @@ export const CursorFollower = () => {
         }}
       />
       <motion.div
-        className="fixed w-8 h-8 border border-[#68A67D] rounded-full pointer-events-none z-[9998]"
+        className="fixed w-8 h-8 border border-[#68A67D]/50 rounded-full pointer-events-none z-[9998]"
         animate={{
           x: mousePosition.x - 16,
           y: mousePosition.y - 16,
-          scale: isHovering ? 1.5 : 1
+          scale: isHovering ? 1.8 : 1
         }}
         transition={{
           type: 'spring',
@@ -543,33 +662,40 @@ export const CursorFollower = () => {
 // PARTICLE FIELD
 // ==========================================
 
-export const ParticleField = ({ count = 30 }) => {
-  const particles = Array.from({ length: count }, (_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    size: Math.random() * 4 + 2,
-    duration: Math.random() * 20 + 10,
-    delay: Math.random() * 5
-  }));
+export const ParticleField = ({ count = 30, className = '' }) => {
+  const [particles, setParticles] = useState([]);
+
+  useEffect(() => {
+    const newParticles = Array.from({ length: count }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: Math.random() * 4 + 2,
+      duration: Math.random() * 20 + 10,
+      delay: Math.random() * 5,
+      opacity: Math.random() * 0.3 + 0.1
+    }));
+    setParticles(newParticles);
+  }, [count]);
 
   return (
-    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+    <div className={`fixed inset-0 overflow-hidden pointer-events-none z-0 ${className}`}>
       {particles.map((particle) => (
         <motion.div
           key={particle.id}
-          className="absolute rounded-full bg-[#68A67D]/20"
+          className="absolute rounded-full bg-[#68A67D]"
           style={{
             width: particle.size,
             height: particle.size,
             left: `${particle.x}%`,
-            top: `${particle.y}%`
+            top: `${particle.y}%`,
+            opacity: particle.opacity
           }}
           animate={{
             y: [0, -100, 0],
             x: [0, 50, 0],
-            opacity: [0.2, 0.5, 0.2],
-            scale: [1, 1.5, 1]
+            opacity: [particle.opacity, particle.opacity * 2, particle.opacity],
+            scale: [1, 1.3, 1]
           }}
           transition={{
             duration: particle.duration,
@@ -584,21 +710,69 @@ export const ParticleField = ({ count = 30 }) => {
 };
 
 // ==========================================
+// ANIMATED COUNTER
+// ==========================================
+
+export const AnimatedCounter = ({ 
+  value, 
+  duration = 2,
+  prefix = '',
+  suffix = '',
+  className = '' 
+}) => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let startTime;
+    let animationFrame;
+
+    const animate = (currentTime) => {
+      if (!startTime) startTime = currentTime;
+      const progress = Math.min((currentTime - startTime) / (duration * 1000), 1);
+      
+      // Easing function
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+      setCount(Math.floor(easeOutQuart * value));
+
+      if (progress < 1) {
+        animationFrame = requestAnimationFrame(animate);
+      }
+    };
+
+    animationFrame = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(animationFrame);
+  }, [value, duration]);
+
+  return (
+    <span className={className}>
+      {prefix}{count.toLocaleString()}{suffix}
+    </span>
+  );
+};
+
+// ==========================================
 // EXPORTS
 // ==========================================
 
 export default {
+  easings,
   PageTransition,
   ScrollReveal,
   StaggerContainer,
   StaggerItem,
   HoverScale,
   HoverLift,
+  HoverGlow,
   SpringBox,
   MagneticButton,
   TextScramble,
   MorphingShape,
   CursorFollower,
   ParticleField,
-  Confetti
+  Confetti,
+  ModalOverlay,
+  Toast,
+  ParallaxContainer,
+  AnimatedCounter,
 };

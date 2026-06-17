@@ -3,6 +3,7 @@ import StatsCard from '../components/StatsCard';
 import AchievementCard from '../components/AchievementCard';
 import EditProfileModal from '../components/EditProfileModal.jsx';
 import { api, getImageUrl } from '../services/api.js';
+import Icon from '../components/Icon.jsx';
 
 const Profile = ({ user, onUserUpdate }) => {
   const [profile, setProfile] = useState(null);
@@ -91,17 +92,28 @@ const Profile = ({ user, onUserUpdate }) => {
               <div>
                 <h2 className="text-3xl font-bold text-[#1A3022] font-heading mb-2">{userData.name}</h2>
                 <div className="space-y-1">
-                  <p className="flex items-center gap-2 text-gray-500 text-sm"><span className="opacity-60">📧</span> {userData.email}</p>
-                  <p className="flex items-center gap-2 text-gray-500 text-sm"><span className="opacity-60">📞</span> {userData.phone}</p>
-                  <p className="flex items-center gap-2 text-gray-500 text-sm"><span className="opacity-60">📍</span> {userData.location}</p>
+                  <p className="flex items-center gap-2 text-gray-500 text-sm">
+                    <Icon name="mail" size={14} className="text-gray-400 flex-shrink-0" ariaHidden={true} />
+                    {userData.email}
+                  </p>
+                  <p className="flex items-center gap-2 text-gray-500 text-sm">
+                    <Icon name="phone" size={14} className="text-gray-400 flex-shrink-0" ariaHidden={true} />
+                    {userData.phone}
+                  </p>
+                  <p className="flex items-center gap-2 text-gray-500 text-sm">
+                    <Icon name="mapPin" size={14} className="text-gray-400 flex-shrink-0" ariaHidden={true} />
+                    {userData.location}
+                  </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setEditOpen(true)}
-                className="bg-[#1A3022] text-white px-6 py-2.5 rounded-2xl text-xs font-bold flex items-center gap-2 hover:bg-[#2d4a37] transition-all hover:shadow-lg active:scale-95 self-start"
+                className="bg-[#1A3022] text-white px-6 py-2.5 rounded-2xl text-xs font-bold flex items-center gap-2 hover:bg-[#2d4a37] transition-all hover:shadow-lg active:scale-95 self-start min-h-[44px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#2D6A4F] focus-visible:ring-offset-2"
+                aria-label="Edit Profile"
               >
-                <span className="text-sm">📝</span> Edit Profile
+                <Icon name="edit" size={16} ariaHidden={true} />
+                Edit Profile
               </button>
             </div>
 
@@ -122,17 +134,19 @@ const Profile = ({ user, onUserUpdate }) => {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <StatsCard title="Total Setor" value={stats ? `${stats.totalWeightKg} kg` : '—'} icon="⚖️" color="bg-white" />
-          <StatsCard title="Poin Terkumpul" value={stats ? stats.totalPoints.toLocaleString('id-ID') : '—'} icon="⭐" color="bg-white" />
-          <StatsCard title="Challenges" value={stats ? String(stats.challengesCompleted) : '—'} icon="🎯" color="bg-white" />
-          <StatsCard title="Hari Aktif" value={stats ? String(stats.activeDays) : '—'} icon="📅" color="bg-white" />
+          <StatsCard title="Total Setor" value={stats ? `${stats.totalWeightKg} kg` : '—'} icon="scale" color="bg-white" />
+          <StatsCard title="Poin Terkumpul" value={stats ? stats.totalPoints.toLocaleString('id-ID') : '—'} icon="star" color="bg-white" />
+          <StatsCard title="Challenges" value={stats ? String(stats.challengesCompleted) : '—'} icon="target" color="bg-white" />
+          <StatsCard title="Hari Aktif" value={stats ? String(stats.activeDays) : '—'} icon="calendar" color="bg-white" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <section className="bg-white rounded-[32px] p-8 border border-gray-100 shadow-sm">
               <div className="flex items-center gap-3 mb-8">
-                <div className="w-10 h-10 bg-[#FEF6E0] rounded-xl flex items-center justify-center text-xl">🏆</div>
+                <div className="w-10 h-10 bg-[#FEF6E0] rounded-xl flex items-center justify-center">
+                  <Icon name="trophy" size={22} className="text-[#D99A29]" ariaHidden={true} />
+                </div>
                 <h3 className="font-bold text-xl text-[#1A3022] font-heading">Pencapaian Terbaru</h3>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -157,11 +171,18 @@ const Profile = ({ user, onUserUpdate }) => {
               <div className="space-y-3">
                 {activities.map((act) => {
                   const isMinus = act.pointsDelta < 0;
+                  const getActivityIcon = () => {
+                    if (act.type === 'deposit') return { name: 'package', color: 'text-[#2D4A37]' };
+                    if (act.type === 'redemption') return { name: 'gift', color: 'text-[#D99A29]' };
+                    return { name: 'target', color: 'text-[#2D6A4F]' };
+                  };
+                  const icon = getActivityIcon();
+                  
                   return (
                     <div key={act.id} className="flex items-center justify-between p-3 bg-[#F9F9F6] border border-gray-50 rounded-2xl">
                       <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg ${isMinus ? 'bg-[#FFF0ED]' : 'bg-white shadow-sm'}`}>
-                          {act.type === 'deposit' ? '📦' : act.type === 'redemption' ? '💰' : '🎯'}
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isMinus ? 'bg-[#FFF0ED]' : 'bg-white shadow-sm'}`}>
+                          <Icon name={icon.name} size={18} className={icon.color} ariaHidden={true} />
                         </div>
                         <div>
                           <p className="text-[11px] font-bold text-[#1A3022]">{act.title}</p>
