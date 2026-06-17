@@ -203,6 +203,18 @@ const MATERIALS = [
   { id: 'electronic', label: 'Elektronik', api: 'elektronik' },
 ];
 
+const normalizeMaterials = (materials) => {
+  if (Array.isArray(materials)) {
+    return materials.map((material) => String(material).trim()).filter(Boolean);
+  }
+
+  if (typeof materials === 'string') {
+    return materials.split(',').map((material) => material.trim()).filter(Boolean);
+  }
+
+  return [];
+};
+
 const DropPointPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('Semua');
@@ -212,6 +224,40 @@ const DropPointPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedPoint, setSelectedPoint] = useState(null);
+
+  useEffect(() => {
+    // #region debug-point E:window-errors
+    const report = (kind, payload) => fetch('http://127.0.0.1:7777/event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId: 'drop-point-blank-screen',
+        runId: 'pre-fix',
+        hypothesisId: 'E',
+        location: 'DropPointPage.jsx:window',
+        msg: `[DEBUG] ${kind}`,
+        data: payload,
+        ts: Date.now(),
+      }),
+    }).catch(() => {});
+    const onError = (event) => report('window-error', {
+      message: event.message,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    });
+    const onRejection = (event) => report('unhandled-rejection', {
+      reason: String(event.reason?.message || event.reason || 'unknown'),
+    });
+    window.addEventListener('error', onError);
+    window.addEventListener('unhandledrejection', onRejection);
+    report('page-mounted', { viewMode: 'daftar' });
+    return () => {
+      window.removeEventListener('error', onError);
+      window.removeEventListener('unhandledrejection', onRejection);
+    };
+    // #endregion
+  }, []);
 
   const fetchPoints = useCallback(async () => {
     setLoading(true);
@@ -224,14 +270,77 @@ const DropPointPage = () => {
         lat: coords?.lat,
         lng: coords?.lng,
       });
+      // #region debug-point A:api-shape
+      fetch('http://127.0.0.1:7777/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: 'drop-point-blank-screen',
+          runId: 'pre-fix',
+          hypothesisId: 'A',
+          location: 'DropPointPage.jsx:fetchPoints-success',
+          msg: '[DEBUG] Drop point payload received',
+          data: {
+            isArray: Array.isArray(res.data),
+            count: Array.isArray(res.data) ? res.data.length : -1,
+            firstMaterialsType: Array.isArray(res.data) && res.data[0]
+              ? typeof res.data[0].materials
+              : 'missing',
+            firstMaterialsIsArray: Array.isArray(res.data) && res.data[0]
+              ? Array.isArray(res.data[0].materials)
+              : false,
+          },
+          ts: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
       setDropPoints(res.data || []);
     } catch (err) {
+      // #region debug-point C:api-error
+      fetch('http://127.0.0.1:7777/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: 'drop-point-blank-screen',
+          runId: 'pre-fix',
+          hypothesisId: 'C',
+          location: 'DropPointPage.jsx:fetchPoints-error',
+          msg: '[DEBUG] Drop point request failed',
+          data: { message: err.message },
+          ts: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion
       setError(err.message);
       setDropPoints([]);
     } finally {
       setLoading(false);
     }
   }, [searchTerm, activeFilter, coords]);
+
+  useEffect(() => {
+    // #region debug-point B:state-shape
+    fetch('http://127.0.0.1:7777/event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId: 'drop-point-blank-screen',
+        runId: 'pre-fix',
+        hypothesisId: 'B',
+        location: 'DropPointPage.jsx:state',
+        msg: '[DEBUG] Drop point state updated',
+        data: {
+          loading,
+          error,
+          count: dropPoints.length,
+          firstMaterialsType: dropPoints[0] ? typeof dropPoints[0].materials : 'missing',
+          firstMaterialsIsArray: dropPoints[0] ? Array.isArray(dropPoints[0].materials) : false,
+        },
+        ts: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+  }, [dropPoints, loading, error]);
 
   useEffect(() => {
     // Debounce the fetch to avoid rapid re-renders
@@ -418,7 +527,7 @@ const DropPointPage = () => {
                           Material yang Diterima:
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          {(dp.materials || '').split(',').map((mat, i) => (
+                          {normalizeMaterials(dp.materials).map((mat, i) => (
                             <span
                               key={i}
                               className="font-sans text-[10px] font-semibold bg-[#F5F5F0] text-[#1A3022] px-3 py-1 rounded-full"
