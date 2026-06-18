@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { Search, Navigation2, Filter, MapPin, X, ChevronRight, Clock, Phone } from 'lucide-react';
 import { api } from '../services/api';
+import Reveal from '../components/motion/Reveal.jsx';
+import RevealGrid from '../components/motion/RevealGrid.jsx';
 
 // Simple Interactive Map Component using OpenStreetMap tiles
 const InteractiveMap = ({ dropPoints, userLocation, onMarkerClick, selectedPoint, onMapReady }) => {
@@ -187,6 +189,20 @@ const InteractiveMap = ({ dropPoints, userLocation, onMarkerClick, selectedPoint
         </div>
       )}
       <div ref={mapRef} className="w-full h-full" />
+      <button
+        type="button"
+        onClick={() => {
+          if (userLocation?.lat && userLocation?.lng && mapInstanceRef.current) {
+            mapInstanceRef.current.setView([userLocation.lat, userLocation.lng], 15);
+          } else if (document.getElementById('btn-my-location')) {
+            document.getElementById('btn-my-location').click();
+          }
+        }}
+        className="absolute bottom-6 right-6 z-[400] bg-white p-3 rounded-full shadow-lg border border-gray-100 hover:bg-gray-50 transition-transform hover:scale-105 active:scale-95"
+        title="Pusatkan ke lokasi saya"
+      >
+        <Navigation2 className="w-6 h-6 text-[#1A3022]" strokeWidth={2.5} />
+      </button>
     </div>
   );
 };
@@ -388,14 +404,14 @@ const DropPointPage = () => {
   return (
     <div className="app-page text-left">
       <div className="app-page-inner max-w-7xl">
-        <div className="app-page-header">
+        <Reveal className="app-page-header">
           <h1 className="font-display text-[2.25rem] font-semibold text-[#1A3022] tracking-tight leading-tight mb-2">
             Drop Point Finder
           </h1>
           <p className="font-sans text-sm font-normal text-gray-500">
             Temukan titik pengumpulan sampah terdekat dari lokasimu dengan mudah.
           </p>
-        </div>
+        </Reveal>
 
         {error && (
           <p className="mb-4 font-sans text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
@@ -403,7 +419,7 @@ const DropPointPage = () => {
           </p>
         )}
 
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
+        <Reveal delay={100} className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="relative flex-1">
             <Search
               className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
@@ -418,16 +434,17 @@ const DropPointPage = () => {
             />
           </div>
           <button
+            id="btn-my-location"
             type="button"
             onClick={useMyLocation}
-            className="bg-[#1A3022] text-white px-8 py-4 rounded-2xl font-sans text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#2d4a37] shrink-0"
+            className="bg-[#1A3022] text-white px-8 py-4 rounded-2xl font-sans text-sm font-semibold flex items-center justify-center gap-2 hover:bg-[#2d4a37] shrink-0 shadow-sm"
           >
             <Navigation2 className="w-5 h-5" strokeWidth={2.5} />
             Lokasi Saat Ini
           </button>
-        </div>
+        </Reveal>
 
-        <div className="mb-8">
+        <Reveal delay={200} className="mb-8">
           <p className="font-sans text-xs font-semibold text-[#1A3022] mb-4 flex items-center gap-2">
             <Filter className="w-4 h-4 text-[#2D6A4F]" strokeWidth={2.5} />
             Filter Berdasarkan Material:
@@ -448,9 +465,9 @@ const DropPointPage = () => {
               </button>
             ))}
           </div>
-        </div>
+        </Reveal>
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        <Reveal delay={300} className="flex flex-col lg:flex-row gap-8">
           <div className="flex-[2]">
             <div className="flex justify-between items-center mb-6">
               <p className="font-sans text-sm font-normal text-gray-500">
@@ -481,7 +498,7 @@ const DropPointPage = () => {
             </div>
 
             {viewMode === 'daftar' ? (
-              <div className="space-y-4">
+              <RevealGrid className="grid grid-cols-1 gap-4">
                 {dropPoints.map((dp) => (
                   <div key={dp.id} className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
                     <div className="flex justify-between items-start mb-4">
@@ -586,7 +603,7 @@ const DropPointPage = () => {
                     <p className="font-sans text-xs text-gray-300 mt-1">Coba ubah filter atau kata kunci pencarian</p>
                   </div>
                 )}
-              </div>
+              </RevealGrid>
             ) : (
               <InteractiveMap 
                 dropPoints={dropPoints} 
@@ -678,7 +695,7 @@ const DropPointPage = () => {
               </div>
             </div>
           )}
-        </div>
+        </Reveal>
       </div>
     </div>
   );

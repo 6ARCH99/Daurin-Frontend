@@ -4,6 +4,8 @@ import AchievementCard from '../components/AchievementCard';
 import EditProfileModal from '../components/EditProfileModal.jsx';
 import { api, getImageUrl } from '../services/api.js';
 import Icon from '../components/Icon.jsx';
+import Reveal from '../components/motion/Reveal.jsx';
+import RevealGrid from '../components/motion/RevealGrid.jsx';
 
 const Profile = ({ user, onUserUpdate }) => {
   const [profile, setProfile] = useState(null);
@@ -21,8 +23,10 @@ const Profile = ({ user, onUserUpdate }) => {
     ]).then(([p, s, b, a]) => {
       setProfile(p.data);
       setStats(s.data);
-      setBadges(b.data);
-      setActivities(a.data);
+      setBadges(b.data || []);
+      setActivities(a.data || []);
+    }).catch((err) => {
+      console.error("Gagal memuat data profil:", err);
     });
   };
 
@@ -43,20 +47,22 @@ const Profile = ({ user, onUserUpdate }) => {
 
   const userData = profile
     ? {
-        name: profile.fullName,
-        email: profile.email,
-        phone: profile.phone,
-        location: profile.address,
-        memberSince: new Date(profile.memberSince).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }).toUpperCase(),
+        name: profile.fullName || '',
+        email: profile.email || '',
+        phone: profile.phone || '',
+        location: profile.address || '',
+        memberSince: profile.memberSince 
+          ? new Date(profile.memberSince).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }).toUpperCase()
+          : 'JAN 2026',
         contributorRank: profile.rank?.toUpperCase() ?? 'MEMBER',
         verified: profile.verified,
       }
     : user
       ? {
-          name: user.name,
-          email: user.email,
-          phone: user.phone,
-          location: user.address,
+          name: user.name || user.fullName || '',
+          email: user.email || '',
+          phone: user.phone || '',
+          location: user.address || '',
           memberSince: 'JAN 2026',
           contributorRank: 'TOP 12%',
           verified: true,
@@ -74,7 +80,7 @@ const Profile = ({ user, onUserUpdate }) => {
   return (
     <div className="min-h-screen bg-[#F5F5F0] font-sans pb-20 pt-10">
       <div className="max-w-6xl mx-auto px-6">
-        <div className="bg-white rounded-[32px] p-8 mb-6 shadow-sm border border-gray-100 flex flex-col md:flex-row items-start gap-8 relative overflow-hidden">
+        <Reveal className="bg-white rounded-[32px] p-8 mb-6 shadow-sm border border-gray-100 flex flex-col md:flex-row items-start gap-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#E9F5EF] rounded-bl-full opacity-20 -z-0" />
 
           <div className="relative z-10">
@@ -82,7 +88,9 @@ const Profile = ({ user, onUserUpdate }) => {
               {profile?.profilePhotoUrl ? (
                 <img src={getImageUrl(profile.profilePhotoUrl)} alt="" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-white text-4xl font-bold font-heading">{userData.name.charAt(0)}</span>
+                <span className="text-white text-4xl font-bold font-heading">
+                  {userData.name ? userData.name.charAt(0) : '?'}
+                </span>
               )}
             </div>
           </div>
@@ -131,16 +139,16 @@ const Profile = ({ user, onUserUpdate }) => {
               )}
             </div>
           </div>
-        </div>
+        </Reveal>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <StatsCard title="Total Setor" value={stats ? `${stats.totalWeightKg} kg` : '—'} icon="scale" color="bg-white" />
-          <StatsCard title="Poin Terkumpul" value={stats ? stats.totalPoints.toLocaleString('id-ID') : '—'} icon="star" color="bg-white" />
-          <StatsCard title="Challenges" value={stats ? String(stats.challengesCompleted) : '—'} icon="target" color="bg-white" />
-          <StatsCard title="Hari Aktif" value={stats ? String(stats.activeDays) : '—'} icon="calendar" color="bg-white" />
-        </div>
+        <RevealGrid className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <StatsCard title="Total Setor" value={stats ? `${stats.totalWeightKg ?? 0} kg` : '—'} icon="scale" color="bg-white" />
+          <StatsCard title="Poin Terkumpul" value={stats ? (stats.totalPoints ?? 0).toLocaleString('id-ID') : '—'} icon="star" color="bg-white" />
+          <StatsCard title="Challenges" value={stats ? String(stats.challengesCompleted ?? 0) : '—'} icon="target" color="bg-white" />
+          <StatsCard title="Hari Aktif" value={stats ? String(stats.activeDays ?? 0) : '—'} icon="calendar" color="bg-white" />
+        </RevealGrid>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <RevealGrid className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <section className="bg-white rounded-[32px] p-8 border border-gray-100 shadow-sm">
               <div className="flex items-center gap-3 mb-8">
@@ -150,12 +158,12 @@ const Profile = ({ user, onUserUpdate }) => {
                 <h3 className="font-bold text-xl text-[#1A3022] font-heading">Pencapaian Terbaru</h3>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {badges.map((b) => (
+                {(badges || []).map((b) => (
                   <AchievementCard
                     key={b.id}
                     title={b.name}
                     desc={b.description}
-                    date={new Date(b.earnedAt).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}
+                    date={b.earnedAt ? new Date(b.earnedAt).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' }) : '—'}
                     icon={b.icon}
                   />
                 ))}
@@ -169,8 +177,8 @@ const Profile = ({ user, onUserUpdate }) => {
                 <h3 className="font-bold text-lg text-[#1A3022] font-heading">Aktivitas Terakhir</h3>
               </div>
               <div className="space-y-3">
-                {activities.map((act) => {
-                  const isMinus = act.pointsDelta < 0;
+                {(activities || []).map((act) => {
+                  const isMinus = (act.pointsDelta || 0) < 0;
                   const getActivityIcon = () => {
                     if (act.type === 'deposit') return { name: 'package', color: 'text-[#2D4A37]' };
                     if (act.type === 'redemption') return { name: 'gift', color: 'text-[#D99A29]' };
@@ -199,7 +207,7 @@ const Profile = ({ user, onUserUpdate }) => {
             </section>
 
           </div>
-        </div>
+        </RevealGrid>
       </div>
 
       <EditProfileModal

@@ -68,6 +68,7 @@ const Reward = () => {
   const [redeeming, setRedeeming] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [confirmTier, setConfirmTier] = useState(null);
 
   const loadBalance = useCallback(async () => {
     const { data } = await api.getRewardBalance();
@@ -101,18 +102,24 @@ const Reward = () => {
 
   const available = balance?.available ?? 0;
 
-  const handleRedeem = async (tier) => {
+  const handleRedeemClick = (tier) => {
     if (!wallet?.verified) {
       setError('Simpan nomor e-wallet terlebih dahulu.');
       return;
     }
+    setConfirmTier(tier);
+  };
+
+  const executeRedeem = async () => {
+    if (!confirmTier) return;
     setRedeeming(true);
     setError('');
     setMessage('');
     try {
-      const res = await api.redeemPoints(platform, tier.amountRp);
+      const res = await api.redeemPoints(platform, confirmTier.amountRp);
       setMessage(`Penukaran diproses. Poin: -${res.data.pointsDeducted}`);
       await loadAll();
+      setConfirmTier(null);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -239,8 +246,8 @@ const Reward = () => {
                         amount={tier.amount}
                         points={tier.points.toLocaleString('id-ID')}
                         isLocked={available < tier.points}
-                        loading={redeeming}
-                        onRedeem={() => handleRedeem(tier)}
+                        loading={redeeming && confirmTier?.amountRp === tier.amountRp}
+                        onRedeem={() => handleRedeemClick(tier)}
                       />
                     ))}
                   </div>
@@ -343,6 +350,41 @@ const Reward = () => {
           <RewardSidebar />
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {confirmTier && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#1A3022]/40 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl border border-gray-100 animate-slide-up">
+            <h3 className="font-display text-2xl font-bold text-[#1A3022] mb-2">Konfirmasi Penukaran</h3>
+            <p className="font-sans text-sm text-gray-500 mb-6 leading-relaxed">
+              Kamu akan menukar <strong className="text-[#1A3022]">{confirmTier.points.toLocaleString('id-ID')} poin</strong> menjadi saldo <strong className="text-[#1A3022]">{confirmTier.amount}</strong> ke <strong className="text-[#1A3022] uppercase">{platform}</strong>.
+            </p>
+            
+            <div className="flex gap-3 mt-6">
+              <button
+                type="button"
+                onClick={() => setConfirmTier(null)}
+                disabled={redeeming}
+                className="flex-1 py-3.5 rounded-2xl font-sans text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={executeRedeem}
+                disabled={redeeming}
+                className="flex-1 py-3.5 rounded-2xl font-sans text-sm font-semibold text-white bg-[#EBA332] hover:bg-[#d9952b] transition-colors flex justify-center items-center gap-2 disabled:opacity-70"
+              >
+                {redeeming ? (
+                  <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-[spin_0.8s_linear_infinite]" />
+                ) : (
+                  'Tukar Poin'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

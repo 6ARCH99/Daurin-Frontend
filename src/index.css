@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "./styles/animations.css";
-@import "./styles/ultra-animations.css";
 
 /* Leaflet Map Styles */
 @import "leaflet/dist/leaflet.css";

@@ -1,33 +1,39 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import { clearAuth, getStoredUser, setAuth } from './services/api.js';
 import AnimatedPage from './components/motion/AnimatedPage.jsx';
 import AnimatedRoute from './components/motion/AnimatedRoute.jsx';
 
 // Import Komponen & Pages
 import Navbar from './components/Navbar'; 
-import Home from './pages/Home';
-import Profile from './pages/Profile';
-import Reward from './pages/Reward';
-import Challenge from './pages/Challenge';
-import LandingPage from './pages/LandingPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import OTPPage from './pages/OTPPage'; 
-import SuccessVerification from './pages/SuccessVerification';
-import SettingsPage from './pages/SettingsPage'; 
-import ForgotPassword from './pages/UbahPassword'; 
-import NotificationPage from './pages/Notification';
-import PreferencePage from './pages/PreferencePage'; 
-import HelpPage from './pages/HelpPage'; 
-import PenjemputanPage from './pages/PenjemputanPage'; 
-import ImpactPage from './pages/ImpactPage'; 
-import DropPointPage from './pages/DropPointPage'; 
-import Leaderboard from './pages/Leaderboard'; 
-import TermsPage from './pages/TermsPage';
-import PrivacyPage from './pages/PrivacyPage';
+const Home = lazy(() => import('./pages/Home'));
+const Profile = lazy(() => import('./pages/Profile'));
+const Reward = lazy(() => import('./pages/Reward'));
+const Challenge = lazy(() => import('./pages/Challenge'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const OTPPage = lazy(() => import('./pages/OTPPage')); 
+const SuccessVerification = lazy(() => import('./pages/SuccessVerification'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage')); 
+const ForgotPassword = lazy(() => import('./pages/UbahPassword')); 
+const NotificationPage = lazy(() => import('./pages/Notification'));
+const PreferencePage = lazy(() => import('./pages/PreferencePage')); 
+const HelpPage = lazy(() => import('./pages/HelpPage')); 
+const PenjemputanPage = lazy(() => import('./pages/PenjemputanPage')); 
+const ImpactPage = lazy(() => import('./pages/ImpactPage')); 
+const DropPointPage = lazy(() => import('./pages/DropPointPage')); 
+const Leaderboard = lazy(() => import('./pages/Leaderboard')); 
+const TermsPage = lazy(() => import('./pages/TermsPage'));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 // --- IMPORT PAGE BARU ---
-import Badges from './pages/Badges'; 
+const Badges = lazy(() => import('./pages/Badges'));
+
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-[#F5F5F0]">
+    <div className="w-10 h-10 border-4 border-gray-200 border-t-[#2D6A4F] rounded-full animate-[spin_1s_linear_infinite]" />
+  </div>
+); 
 
 // --- KOMPONEN PEMBANTU NAVIGASI ---
 const SettingsWithNavigation = ({ handleLogout }) => {
@@ -95,9 +101,10 @@ function App() {
         {isLoggedIn && <Navbar />}
         
         <main className={isLoggedIn ? "pt-20" : ""}>
-          <Routes>
-            {/* 1. ROUTE AUTHENTICATION */}
-            <Route 
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              {/* 1. ROUTE AUTHENTICATION */}
+              <Route 
               path="/" 
               element={
                 !isLoggedIn ? (
@@ -223,8 +230,9 @@ function App() {
               element={<PrivacyPage onClose={() => window.history.back()} />} 
             />
             
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </Suspense>
         </main>
       </div>
     </Router>

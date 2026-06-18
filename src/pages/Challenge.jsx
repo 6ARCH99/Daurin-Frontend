@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '../services/api.js';
 import ApiStatusBanner from '../components/ApiStatusBanner.jsx';
+import Reveal from '../components/motion/Reveal.jsx';
+import RevealGrid from '../components/motion/RevealGrid.jsx';
 import { Trophy, Target, Clock, Calendar, Users, Medal, Gift, Lightbulb, AlertTriangle, Ban, Rocket } from 'lucide-react';
 
 const Challenge = () => {
@@ -98,7 +100,7 @@ const Challenge = () => {
   return (
     <div className="min-h-screen bg-[#F9F7F2] px-6 md:px-20 py-10 font-sans text-[#1A2E35]">
       {/* Header */}
-      <div className="mb-10">
+      <Reveal className="mb-10">
         <h1 className="text-4xl font-bold flex items-center gap-2">
           Challenge <Target className="w-8 h-8 text-[#D99A29]" />
         </h1>
@@ -113,10 +115,10 @@ const Challenge = () => {
             Coba muat ulang
           </button>
         )}
-      </div>
+      </Reveal>
 
       {/* Challenge Unggulan */}
-      <section className="bg-white rounded-[32px] p-8 shadow-sm border border-gray-100 mb-12">
+      <Reveal delay={100} className="bg-white rounded-[32px] p-8 shadow-sm border border-gray-100 mb-12">
         <span className="text-[10px] font-bold text-orange-400 uppercase tracking-widest bg-orange-50 px-3 py-1 rounded-full">
           Challenge Unggulan
         </span>
@@ -152,12 +154,12 @@ const Challenge = () => {
         >
           {featured?.joined ? 'Sudah Diikuti' : `Ikut Sekarang · +${featured?.rewardPoints ?? 0} poin`}
         </button>
-      </section>
+      </Reveal>
 
       {/* Challenge Aktif */}
       <section className="mb-12">
-        <h3 className="text-xl font-bold mb-6 font-heading">Challenge Aktif</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Reveal><h3 className="text-xl font-bold mb-6 font-heading">Challenge Aktif</h3></Reveal>
+        <RevealGrid className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {loading && activeChallenges.length === 0 && (
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-50 h-40 animate-pulse" />
           )}
@@ -182,13 +184,13 @@ const Challenge = () => {
               </button>
             </div>
           ))}
-        </div>
+        </RevealGrid>
       </section>
 
       {/* Challenge Tersedia (Bagian Baru yang Ditambahkan) */}
       <section className="mb-12">
-        <h3 className="text-xl font-bold mb-6 font-heading">Challenge Tersedia</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Reveal><h3 className="text-xl font-bold mb-6 font-heading">Challenge Tersedia</h3></Reveal>
+        <RevealGrid className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {loading && availableChallenges.length === 0 && (
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-50 h-44 animate-pulse" />
           )}
@@ -234,11 +236,11 @@ const Challenge = () => {
             </div>
           );
           })}
-        </div>
+        </RevealGrid>
       </section>
 
       {/* Leaderboard & Badges */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+      <RevealGrid className="grid grid-cols-1 md:grid-cols-2 gap-10">
         {/* Leaderboard */}
         <section>
           <div className="flex items-center gap-2 mb-6">
@@ -288,7 +290,7 @@ const Challenge = () => {
             ))}
           </div>
         </section>
-      </div>
+      </RevealGrid>
 
       {/* Detail Modal */}
       {selectedChallenge && (

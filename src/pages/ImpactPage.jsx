@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { api } from '../services/api.js';
 import ApiStatusBanner from '../components/ApiStatusBanner.jsx';
 import ContributionLineChart from '../components/ContributionLineChart.jsx';
+import Reveal from '../components/motion/Reveal.jsx';
+import RevealGrid from '../components/motion/RevealGrid.jsx';
 import { TreePine, Droplets, Zap, Globe, Users, Share2 } from 'lucide-react';
 
 // Share buttons component
@@ -140,7 +142,7 @@ const ImpactPage = () => {
     <div className="min-h-screen bg-[#F5F5F0] font-sans pb-12">
       <div className="max-w-6xl mx-auto px-6 pt-10">
         {/* Header */}
-        <header className="mb-10">
+        <Reveal as="header" className="mb-10">
           <h1 className="type-page-title mb-2 flex items-center gap-2">
             Dampak Iklimmu <Globe className="w-8 h-8 text-[#2D6A4F]" />
           </h1>
@@ -150,10 +152,10 @@ const ImpactPage = () => {
           <div className="mt-4">
             <ApiStatusBanner error={error} loading={loading} />
           </div>
-        </header>
+        </Reveal>
 
         {/* Climate impact metrics — Impact page only (not Home stats) */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <RevealGrid className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {loading && metrics.length === 0 && (
             <>
               {[1, 2, 3].map((i) => (
@@ -181,10 +183,10 @@ const ImpactPage = () => {
               <p className="text-xs text-gray-400">{m.sub}</p>
             </article>
           ))}
-        </section>
+        </RevealGrid>
 
         {/* Trend Kontribusi — line chart */}
-        <section className="bg-white rounded-[32px] p-8 md:p-10 shadow-sm border border-gray-100 mb-8">
+        <Reveal delay={200} as="section" className="bg-white rounded-[32px] p-8 md:p-10 shadow-sm border border-gray-100 mb-8">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
             <div>
               <h2 className="text-2xl font-bold text-[#1A3022] font-heading">Trend Kontribusi</h2>
@@ -205,10 +207,10 @@ const ImpactPage = () => {
             values={trend?.weightKg ?? []}
             loading={loading}
           />
-        </section>
+        </Reveal>
 
         {/* Bottom row */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <RevealGrid className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Perbandingan Pengguna */}
           <article className="bg-white rounded-[32px] p-8 shadow-sm border border-gray-100">
             <div className="flex items-center gap-3 mb-8">
@@ -303,7 +305,7 @@ const ImpactPage = () => {
               <ShareButtons impact={impact} />
             </div>
           </article>
-        </section>
+        </RevealGrid>
       </div>
     </div>
   );
